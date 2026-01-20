@@ -17,6 +17,7 @@ export default {
         body: "#6B7280",      // normal text  
         muted: "#9CA3AF",     // secondary text - grey + blue
         wooden:"#C2A68C",
+        primary:"#008BFF",
          
         surface: "#FFFFFF",
         section: "#F9FAFB",

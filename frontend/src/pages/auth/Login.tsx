@@ -1,12 +1,30 @@
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
-import { useDispatch, useSelector } from "react-redux";
+import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
+import type{LoginPayload} from "@/types/auth.types"
+import { login } from "@/services/auth.service";
+import type { NavigateFunction } from "react-router-dom";
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
-  const { loading } = useSelector((state) => state.auth);
-  const dispatch = useDispatch();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const { loading } = useAppSelector((state) => state.auth);
+  const dispatch = useAppDispatch();
+  const navigate:NavigateFunction = useNavigate();
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const payload: LoginPayload = {
+      email,
+      password,
+    };
+  
+    dispatch(login(payload, navigate));
+  };
 
   return (
     <>
@@ -17,7 +35,7 @@ const Login = () => {
         <p className="text-body text-lg">Sign in to continue</p>
       </div>
 
-      <form className="space-y-6">
+      <form className="space-y-6" onSubmit={handleSubmit}>
         {/* Email */}
         <div>
           <label className="block text-sm font-semibold text-heading mb-3">
@@ -25,9 +43,10 @@ const Login = () => {
           </label>
           <input
             type="email"
-            name="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             placeholder="Enter your email"
-            className="w-full rounded-2xl border border-border px-5 py-4 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+            className="w-full rounded-2xl bg-gray-200 px-5 py-4"
           />
         </div>
 
@@ -40,44 +59,30 @@ const Login = () => {
           <div className="relative">
             <input
               type={showPassword ? "text" : "password"}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               placeholder="Enter your password"
-              className="w-full rounded-2xl border border-border px-5 py-4 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+              className="w-full rounded-2xl bg-gray-200 px-5 py-4 pr-12"
             />
 
-            {/* Eye Icon */}
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute inset-y-0 right-4 flex items-center text-muted hover:text-brand transition"
+              className="absolute inset-y-0 right-4 flex items-center"
             >
               {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
             </button>
           </div>
         </div>
 
-        <div className="flex items-center justify-between text-sm">
-          <Link
-            to="/forgot-password"
-            className="text-brand hover:text-brand-hover font-semibold"
-          >
-            Forgot Password?
-          </Link>
-        </div>
-
         <button
+          disabled={loading}
           type="submit"
-          className="w-full rounded-xl bg-amber-400 text-black py-3 font-semibold text-lg hover:bg-brand-hover transition-all duration-200 shadow-lg"
+          className="w-full rounded-xl bg-amber-400 py-3 font-semibold"
         >
-          Sign In
+          {loading ? "Signing in..." : "Sign In"}
         </button>
       </form>
-
-      <p className="mt-8 text-center text-sm text-body">
-        Don't have an account?{" "}
-        <Link to="/register" className="font-semibold text-brand hover:text-brand-hover">
-          Create one here
-        </Link>
-      </p>
     </>
   );
 };

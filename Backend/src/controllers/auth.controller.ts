@@ -65,18 +65,17 @@ export const login = async (
 
     const user = await prisma.user.findUnique({
       where: { email },
+      select: {
+        id: true,
+        email: true,
+        username: true,
+        avtar: true,
+        chatId: true,
+        password: true, // ONLY because we need to compare
+      },
     });
 
-    if (!user) {
-      return res.status(400).json({
-        success: false,
-        message: MESSAGES.AUTH.INVALID_CREDENTIALS,
-      });
-    }
-
-    const isMatch = await bcrypt.compare(password, user.password);
-
-    if (!isMatch) {
+    if (!user || !(await bcrypt.compare(password, user.password))) {
       return res.status(400).json({
         success: false,
         message: MESSAGES.AUTH.INVALID_CREDENTIALS,
@@ -90,6 +89,7 @@ export const login = async (
 
     const accessToken = generateAccessToken(payload);
 
+    // remove password before sending
     const { password: _, ...userInfo } = user;
 
     return res
@@ -114,6 +114,7 @@ export const login = async (
     });
   }
 };
+
 
 export const logout = (
   _req: Request,

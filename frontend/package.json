@@ -11,11 +11,15 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
+    "@reduxjs/toolkit": "^2.11.2",
     "axios": "^1.13.2",
+    "lucide-react": "^0.562.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-hook-form": "^7.71.1",
+    "react-hot-toast": "^2.6.0",
     "react-icons": "^5.5.0",
+    "react-redux": "^9.2.0",
     "react-router-dom": "^7.12.0",
     "zod": "^4.3.5"
   },
@@ -25,6 +29,7 @@
     "@types/react": "^19.2.5",
     "@types/react-dom": "^19.2.3",
     "@types/react-router-dom": "^5.3.3",
+    "@vitejs/plugin-react": "^5.1.2",
     "@vitejs/plugin-react-swc": "^4.2.2",
     "autoprefixer": "^10.4.23",
     "eslint": "^9.39.1",
