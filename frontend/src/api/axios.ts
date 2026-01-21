@@ -5,6 +5,7 @@ import type{
   AxiosResponse,
 } from "axios";
 
+import {refreshAccessToken} from "./refresh";
 // An Axios instance is a pre-configured Axios client. 
 const axiosInstance: AxiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
@@ -34,15 +35,30 @@ export const apiConnector = <T = unknown>(
 
 // An interceptor is a function that runs automatically before or after a request/response.
 
-axiosInstance.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem("token");
+axiosInstance.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
 
-    if (token) {
-      config.headers.set("Authorization", `Bearer ${token}`);
+    if (
+      error.response?.status === 401 &&
+      error.response?.data?.code === "TOKEN_EXPIRED" &&
+      !originalRequest._retry
+    ) {
+      originalRequest._retry = true;
+
+      try {
+        await refreshAccessToken();
+        return axiosInstance(originalRequest);
+      } catch (refreshError) {
+        // Refresh failed → logout
+        window.location.href = "/login";
+        return Promise.reject(refreshError);
+      }
     }
 
-    return config;
-  },
-  (error) => Promise.reject(error)
+    return Promise.reject(error);
+  }
 );
+
+

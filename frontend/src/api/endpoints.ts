@@ -7,6 +7,7 @@ export const AUTH_ENDPOINTS = {
   FORGOT_PASSWORD: `${BASE_URL}/auth/forgot-password`,
   VERIFY_OTP: `${BASE_URL}/auth/verify-otp`,
   RESET_PASSWORD: `${BASE_URL}/auth/reset-password`,
+  REFRESH:`${BASE_URL}/auth/refresh`
 };
 
 export const USER_ENDPOINTS = {
