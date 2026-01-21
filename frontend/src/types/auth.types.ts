@@ -6,7 +6,8 @@ export interface User {
     chatId: string[];
   }
   
-export type StoredUser = Omit<User, "email">;  
+export type StoredUser = Omit<User, "email">; 
+
   export interface AuthState {
     loading: boolean;
     isAuthenticated: boolean;
@@ -23,36 +24,31 @@ export type StoredUser = Omit<User, "email">;
   }
   
   export interface SignupPayload {
-    name: string;
+    username: string;
     email: string;
     password: string;
-  }
-  
-  export interface SignupResponse {
-    user: User;
-    token: string;
   }
   
   export interface ForgotPasswordPayload {
     email: string;
   }
+
+  export interface OtpPayload {
+    email: string;
+    otp: string;
+    resetToken?: string | null;
+  }
+  
   
   export interface ForgotPasswordResponse {
-    message: string;
+     resetToken:string;
   }
   
   export interface ResetPasswordPayload {
-    token: string;
+    token: string | null;
     password: string;
   }
-  
-  export interface ResetPasswordResponse {
-    message: string;
-  }
-  
-  /* =========================
-     GENERIC API ERROR
-  ========================= */
+   
   export interface ApiErrorResponse {
     message: string;
     statusCode?: number;

@@ -1,57 +1,44 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FiLock, FiEye, FiEyeOff } from "react-icons/fi";
-import toast from "react-hot-toast";
-import { apiConnector } from "@/api/axios";
-import { useZodForm } from "@/hooks/useZodForm";
-import { resetPasswordSchema } from "@/validation/auth.validation";
-import type { ApiResponse } from "@/types/api.types";
+import {Button} from "@/components/ui/Button";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {storage} from "@/utils/storage"
+import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
+import { resetPassword } from "@/services/auth.service";
+import {
+  resetPasswordSchema,
+  type ResetPasswordForm,
+} from "@/validation/auth.validation";
 
 const ResetPassword = () => {
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] =
-    useState(false);
-  const [loading, setLoading] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const { values, errors, isValid, register } =
-    useZodForm(resetPasswordSchema);
-
+  const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const { loading } = useAppSelector((state) => state.auth);
 
-  const handleReset = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!isValid) return;
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isValid },
+  } = useForm<ResetPasswordForm>({
+    resolver: zodResolver(resetPasswordSchema),
+    mode: "onTouched",
+  });
 
-    try {
-      setLoading(true);
-
-      const res = await apiConnector<ApiResponse>(
-        "POST",
-        "/auth/reset-password",
-        {
-          newPassword: values.password,
-          resetToken: localStorage.getItem("resetToken"),
-        }
-      );
-
-      if (!res.data.success) {
-        throw new Error(res.data.message);
-      }
-
-      localStorage.removeItem("resetToken");
-
-      toast.success(res.data.message || "Password reset successful");
-
-      navigate("/login");
-    } catch (error: any) {
-      toast.error(
-        error?.response?.data?.message ||
-          error?.message ||
-          "Failed to reset password"
-      );
-    } finally {
-      setLoading(false);
-    }
+  const onSubmit = (data: ResetPasswordForm) => {
+    const token : string | null = storage.getOtpToken();
+    dispatch(
+      resetPassword(
+        { password: data.password , 
+          token
+        },
+        navigate
+      )
+    );
   };
 
   return (
@@ -67,8 +54,11 @@ const ResetPassword = () => {
       </div>
 
       {/* Form */}
-      <form onSubmit={handleReset} className="space-y-6">
-        {/* New Password */}
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="space-y-6"
+      >
+        {/* Password */}
         <div>
           <label className="block text-sm font-semibold mb-3">
             New Password
@@ -100,7 +90,7 @@ const ResetPassword = () => {
 
           {errors.password && (
             <p className="mt-1 text-sm text-red-600">
-              {errors.password}
+              {errors.password.message}
             </p>
           )}
         </div>
@@ -111,14 +101,16 @@ const ResetPassword = () => {
             Confirm Password
           </label>
 
-          <div className="relative">
+          <div className="relative mb-3">
             <FiLock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
 
             <input
-              type={showConfirmPassword ? "text" : "password"}
+              type={
+                showConfirmPassword ? "text" : "password"
+              }
               {...register("confirmPassword")}
               placeholder="Confirm new password"
-              className={`w-full rounded-2xl pl-12 pr-12 py-4 text-sm outline-none border
+              className={`w-full rounded-2xl  pl-12 pr-12 py-4 text-sm outline-none border
                 ${
                   errors.confirmPassword
                     ? "border-red-400 bg-red-50"
@@ -129,37 +121,37 @@ const ResetPassword = () => {
             <button
               type="button"
               onClick={() =>
-                setShowConfirmPassword(!showConfirmPassword)
+                setShowConfirmPassword(
+                  !showConfirmPassword
+                )
               }
               className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-600"
             >
-              {showConfirmPassword ? <FiEyeOff /> : <FiEye />}
+              {showConfirmPassword ? (
+                <FiEyeOff />
+              ) : (
+                <FiEye />
+              )}
             </button>
           </div>
 
           {errors.confirmPassword && (
             <p className="mt-1 text-sm text-red-600">
-              {errors.confirmPassword}
+              {errors.confirmPassword.message}
             </p>
           )}
         </div>
 
         {/* Submit */}
-        <button
+        <Button
           type="submit"
-          disabled={!isValid || loading}
-          className="
-            w-full rounded-xl py-3 font-semibold text-lg transition
-            bg-amber-400 hover:bg-amber-500
-            disabled:bg-gray-300
-            disabled:text-gray-500
-            disabled:cursor-not-allowed
-            disabled:hover:bg-gray-300
-            shadow-lg
-          "
+          loading={loading}
+          loadingText="Resetting..."
+          disabled={!isValid}
         >
-          {loading ? "Resetting..." : "Reset Password"}
-        </button>
+          Reset Password
+        </Button>
+
       </form>
     </>
   );

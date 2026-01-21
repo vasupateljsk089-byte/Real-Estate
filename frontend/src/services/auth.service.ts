@@ -1,6 +1,6 @@
 import toast from "react-hot-toast";
 import type { NavigateFunction } from "react-router-dom";
-
+// import {showToast} from "@/components/ui/AppToast";
 import { apiConnector } from "@/api/axios";
 import { AUTH_ENDPOINTS } from "@/api/endpoints";
 
@@ -11,7 +11,11 @@ import { storage } from "@/utils/storage";
 import type {
   LoginPayload,
   SignupPayload,
+  ForgotPasswordPayload,
+  ResetPasswordPayload,
+  OtpPayload,
   User,
+  ForgotPasswordResponse,
 } from "@/types/auth.types";
 
 import type { ApiResponse } from "@/types/api.types";
@@ -42,7 +46,7 @@ export const login =
       storage.setUser(safeUser);
 
       toast.success(res.data.message || "Login successful 🎉");
-
+      // showToast("success", res.data.message || "Login successful 🎉");
       navigate("/");
     } catch (error: any) {
       toast.error(
@@ -61,7 +65,7 @@ export const registerUser =
     dispatch(setLoading(true));
 
     try {
-      const res = await apiConnector<ApiResponse<User>>(
+      const res = await apiConnector<ApiResponse>(
         "POST",
         AUTH_ENDPOINTS.REGISTER,
         userData
@@ -104,3 +108,121 @@ export const logoutUser =
       navigate("/login");
     }
 };
+
+export const forgotPassword =
+  (
+    data: ForgotPasswordPayload,
+    navigate: NavigateFunction
+  ) =>
+  async (dispatch: AppDispatch) => {
+    dispatch(setLoading(true));
+
+    try {
+      const res = await apiConnector<
+        ApiResponse<ForgotPasswordResponse>
+      >(
+        "POST",
+        AUTH_ENDPOINTS.FORGOT_PASSWORD,
+        data
+      );
+
+      if (!res.data.success) {
+        throw new Error(res.data.message);
+      }
+
+       console.log("Token",res.data)
+       
+      // store resetToken ONLY if backend sends it
+      if (res.data.data?.resetToken) {
+        const token = res.data.data?.resetToken;
+        storage.setOtpToken(token);
+      }
+
+      toast.success(
+        res.data.message || "OTP sent successfully"
+      );
+
+      navigate("/verify-otp", {
+        state: { email: data.email },
+      });
+    } catch (error: any) {
+      toast.error(
+        error?.response?.data?.message ||
+          error?.message ||
+          "Failed to send OTP"
+      );
+    } finally {
+      dispatch(setLoading(false));
+    }
+  };
+
+  export const verifyOtp =
+  (data: OtpPayload, navigate: NavigateFunction) =>
+  async () => {
+    try {
+      const res = await apiConnector<ApiResponse>(
+        "POST",
+        AUTH_ENDPOINTS.VERIFY_OTP,
+        data
+      );
+
+      if (!res.data.success) {
+        throw new Error(res.data.message);
+      }
+
+      toast.success(res.data.message || "OTP verified");
+
+      navigate("/reset-password", {
+        state: { email: data.email },
+      });
+    } catch (error: any) {
+      toast.error(
+        error?.response?.data?.message ||
+          error?.message ||
+          "Invalid or expired OTP"
+      );
+    }
+  };
+  
+  
+  
+  export const resetPassword =
+  (
+    data: ResetPasswordPayload,
+    navigate: NavigateFunction
+  ) =>
+  async (dispatch: AppDispatch) => {
+    dispatch(setLoading(true));
+
+    try {
+      const res = await apiConnector<ApiResponse>(
+        "POST",
+        AUTH_ENDPOINTS.RESET_PASSWORD,
+        {
+          newPassword: data.password,
+          resetToken:data.token
+        }
+      );
+
+      if (!res.data.success) {
+        throw new Error(res.data.message);
+      }
+
+      storage.clearOtpoToken();
+
+      toast.success(
+        res.data.message || "Password reset successful"
+      );
+
+      navigate("/login");
+    } catch (error: any) {
+      toast.error(
+        error?.response?.data?.message ||
+          error?.message ||
+          "Failed to reset password"
+      );
+      navigate("/forgot-password")
+    } finally {
+      dispatch(setLoading(false));
+    }
+  };

@@ -1,86 +1,84 @@
 import { useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import toast from "react-hot-toast";
-import { apiConnector } from "@/api/axios";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+
 import { verifyOtpSchema } from "@/validation/auth.validation";
-import type { ApiResponse } from "@/types/api.types";
+import type { VerifyOtpForm } from "@/validation/auth.validation";
+import { verifyOtp } from "@/services/auth.service";
+import { Button } from "@/components/ui/Button";
 
 const OTP_LENGTH = 6;
 
 const VerifyOtp = () => {
-  const [otp, setOtp] = useState<string[]>(Array(OTP_LENGTH).fill(""));
-  const inputs = useRef<HTMLInputElement[]>([]);
+  const [otpValues, setOtpValues] = useState<string[]>(
+    Array(OTP_LENGTH).fill("")
+  );
+
+  const inputsRef = useRef<(HTMLInputElement | null)[]>([]);
 
   const navigate = useNavigate();
   const { state } = useLocation();
-  const email = state?.email;
+  const email: string | undefined = state?.email;
 
-  /* =========================
-     Helpers
-  ========================= */
+  const {
+    handleSubmit,
+    formState: { isSubmitting },
+    setValue,
+  } = useForm<VerifyOtpForm>({
+    resolver: zodResolver(verifyOtpSchema),
+    mode: "onSubmit",
+  });
+
+  if (!email) {
+    navigate("/forgot-password");
+    return null;
+  }
+
+  /* ========================
+     OTP Change
+  ======================== */
   const handleChange = (value: string, index: number) => {
     if (!/^\d?$/.test(value)) return;
 
-    const next = [...otp];
+    const next = [...otpValues];
     next[index] = value;
-    setOtp(next);
+    setOtpValues(next);
+
+    setValue("otp", next.join(""));
 
     if (value && index < OTP_LENGTH - 1) {
-      inputs.current[index + 1]?.focus();
+      inputsRef.current[index + 1]?.focus();
     }
   };
 
+  /* ========================
+     Backspace Handling
+  ======================== */
   const handleKeyDown = (
     e: React.KeyboardEvent<HTMLInputElement>,
     index: number
   ) => {
-    if (e.key === "Backspace" && !otp[index] && index > 0) {
-      inputs.current[index - 1]?.focus();
+    if (e.key === "Backspace" && !otpValues[index] && index > 0) {
+      inputsRef.current[index - 1]?.focus();
     }
   };
 
-  /* =========================
-     Verify OTP
-  ========================= */
-  const handleVerify = async () => {
-    const code = otp.join("");
-
-    const parsed = verifyOtpSchema.safeParse({ otp: code });
-    if (!parsed.success) {
-      toast.error(parsed.error.issues[0].message);
-      return;
-    }
-
-    try {
-      const res = await apiConnector<ApiResponse>(
-        "POST",
-        "/auth/verify-otp",
-        {
-          email,
-          otp: code,
-          resetToken: localStorage.getItem("resetToken"),
-        }
-      );
-
-      if (!res.data.success) {
-        throw new Error(res.data.message);
-      }
-
-      toast.success(res.data.message || "OTP verified");
-
-      navigate("/reset-password", {
-        state: { email },
-      });
-    } catch (error: any) {
-      toast.error(
-        error?.response?.data?.message ||
-          error?.message ||
-          "Invalid or expired code"
-      );
-    }
+  /* ========================
+     Submit
+  ======================== */
+  const onSubmit = (data: VerifyOtpForm) => {
+    verifyOtp(
+      {
+        email,
+        otp: data.otp,
+        resetToken: localStorage.getItem("resetToken"),
+      },
+      navigate
+    )();
   };
 
-  const isComplete = otp.every(Boolean);
+  const isComplete = otpValues.every(Boolean);
 
   return (
     <>
@@ -103,56 +101,41 @@ const VerifyOtp = () => {
       </div>
 
       {/* OTP Inputs */}
-      <div className="flex justify-center gap-3 mb-6">
-        {otp.map((digit, index) => (
-          <input
-            key={index}
-            ref={(el) => {
-              if (el) inputs.current[index] = el;
-            }}
-            maxLength={1}
-            value={digit}
-            onChange={(e) =>
-              handleChange(e.target.value, index)
-            }
-            onKeyDown={(e) => handleKeyDown(e, index)}
-            className="
-              h-14 w-12 rounded-xl border border-gray-300 bg-gray-50
-              text-center text-xl font-semibold
-              focus:outline-none focus:ring-2 focus:ring-amber-400
-              transition
-            "
-          />
-        ))}
-      </div>
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <div className="flex justify-center gap-3 mb-8">
+          {otpValues.map((digit, index) => (
+            <input
+              key={index}
+              ref={(el) => {
+                inputsRef.current[index] = el;
+              }}
+              value={digit}
+              maxLength={1}
+              onChange={(e) =>
+                handleChange(e.target.value, index)
+              }
+              onKeyDown={(e) => handleKeyDown(e, index)}
+              className="
+                h-14 w-12 rounded-xl border border-gray-300 bg-gray-50
+                text-center text-xl font-semibold
+                focus:outline-none
+                focus:ring-1 focus:ring-wooden
+                transition
+              "
+            />
+          ))}
+        </div>
 
-      {/* Resend */}
-      <div className="mb-8 text-center text-sm text-gray-500">
-        Didn’t receive the code?{" "}
-        <button
-          type="button"
-          className="font-semibold text-amber-600 hover:text-amber-700"
+        {/* Verify Button */}
+        <Button
+          type="submit"
+          loading={isSubmitting}
+          loadingText="Verifying..."
+          disabled={!isComplete}
         >
-          Resend
-        </button>
-      </div>
-
-      {/* Verify Button */}
-      <button
-        onClick={handleVerify}
-        disabled={!isComplete}
-        className="
-          w-full rounded-xl py-3 font-semibold text-lg transition
-          bg-amber-400 hover:bg-amber-500
-          disabled:bg-gray-300
-          disabled:text-gray-500
-          disabled:cursor-not-allowed
-          disabled:hover:bg-gray-300
-          shadow-lg
-        "
-      >
-        Verify & Continue
-      </button>
+          Verify & Continue
+        </Button>
+      </form>
 
       {/* Back */}
       <div

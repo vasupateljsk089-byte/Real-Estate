@@ -1,58 +1,31 @@
-import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { FiMail } from "react-icons/fi";
-import toast from "react-hot-toast";
-import { apiConnector } from "@/api/axios";
-import { forgotPasswordSchema } from "@/validation/auth.validation";
-import { useZodForm } from "@/hooks/useZodForm";
-import type { ApiResponse } from "@/types/api.types";
+import {Button} from "@/components/ui/Button";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
+import { forgotPassword } from "@/services/auth.service";
+import {
+  forgotPasswordSchema,
+  type ForgotPasswordForm,
+} from "@/validation/auth.validation";
 
 const ForgotPassword = () => {
-  const { values, errors, isValid, register } =
-    useZodForm(forgotPasswordSchema);
-
-  const [loading, setLoading] = useState(false);
+  const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const { loading } = useAppSelector((state) => state.auth);
 
-  const handleSendOtp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!isValid) return;
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isValid },
+  } = useForm<ForgotPasswordForm>({
+    resolver: zodResolver(forgotPasswordSchema),
+    mode: "onChange", 
+  });
 
-    try {
-      setLoading(true);
-
-      const res = await apiConnector<ApiResponse<{ resetToken?: string }>>(
-        "POST",
-        "/auth/forgot-password",
-        values
-      );
-
-      if (!res.data.success) {
-        throw new Error(res.data.message);
-      }
-
-      // store token only if backend sends it (optional)
-      if (res.data.data?.resetToken) {
-        localStorage.setItem(
-          "resetToken",
-          res.data.data.resetToken
-        );
-      }
-
-      toast.success(res.data.message || "OTP sent successfully");
-
-      navigate("/verify-otp", {
-        state: { email: values.email },
-      });
-    } catch (error: any) {
-      toast.error(
-        error?.response?.data?.message ||
-          error?.message ||
-          "Failed to send OTP"
-      );
-    } finally {
-      setLoading(false);
-    }
+  const onSubmit = (data: ForgotPasswordForm) => {
+    dispatch(forgotPassword(data, navigate));
   };
 
   return (
@@ -68,7 +41,10 @@ const ForgotPassword = () => {
       </div>
 
       {/* Form */}
-      <form onSubmit={handleSendOtp} className="space-y-6">
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="space-y-6"
+      >
         <div>
           <label className="block text-sm font-semibold mb-3">
             Email Address
@@ -92,26 +68,20 @@ const ForgotPassword = () => {
 
           {errors.email && (
             <p className="mt-1 text-sm text-red-600">
-              {errors.email}
+              {errors.email.message}
             </p>
           )}
         </div>
 
         {/* Submit */}
-        <button
+        <Button
           type="submit"
-          disabled={!isValid || loading}
-          className="
-            w-full rounded-xl py-3 font-semibold text-lg transition
-            bg-amber-400 hover:bg-amber-500
-            disabled:bg-gray-300
-            disabled:text-gray-500
-            disabled:cursor-not-allowed
-            disabled:hover:bg-gray-300
-          "
+          loading={loading}
+          loadingText="Sending..."
+          disabled={!isValid}
         >
-          {loading ? "Sending..." : "Send verification code"}
-        </button>
+          Send verification code
+        </Button>
       </form>
 
       {/* Back link */}

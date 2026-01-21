@@ -1,6 +1,7 @@
 import type { StoredUser } from "@/types/auth.types";
 
 const USER_KEY = "auth_user";
+const OTP_TOKEN = "resetToken";
 
 export const storage = {
   
@@ -12,8 +13,23 @@ export const storage = {
     const data = localStorage.getItem(USER_KEY);
     return data ? (JSON.parse(data) as StoredUser) : null;
   },
-
+  
   clearUser() {
     localStorage.removeItem(USER_KEY);
   },
+
+  setOtpToken(token:string)
+  {
+    localStorage.setItem(OTP_TOKEN,token);
+  },
+
+   getOtpToken():string | null {
+    const data = localStorage.getItem(OTP_TOKEN);
+    return data ;
+   },
+
+   clearOtpoToken()
+   {
+    localStorage.removeItem(OTP_TOKEN);
+   }
 };

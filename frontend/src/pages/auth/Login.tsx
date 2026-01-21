@@ -1,26 +1,34 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
+import {Button} from "@/components/ui/Button";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 import { login } from "@/services/auth.service";
-import { useZodForm } from "@/hooks/useZodForm";
 import { loginSchema } from "@/validation/auth.validation";
+import type { LoginForm } from "@/validation/auth.validation";
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
 
-  const { values, errors, isValid, register } =
-    useZodForm(loginSchema);
-
-  const { loading } = useAppSelector((state) => state.auth);
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const { loading } = useAppSelector((state) => state.auth);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!isValid) return;
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isValid },
+  } = useForm<LoginForm>({
+    resolver: zodResolver(loginSchema),
+    mode: "onTouched",
+    reValidateMode: "onChange",
+  });
 
-    dispatch(login(values as any, navigate));
+  const onSubmit = (data: LoginForm) => {
+    dispatch(login(data, navigate));
   };
 
   return (
@@ -34,7 +42,7 @@ const Login = () => {
       </div>
 
       {/* Form */}
-      <form className="space-y-6" onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         {/* Email */}
         <div>
           <label className="block text-sm font-semibold mb-2">
@@ -44,7 +52,7 @@ const Login = () => {
             type="email"
             {...register("email")}
             placeholder="Enter your email"
-            className={`w-full rounded-2xl px-5 py-4 outline-none border
+            className={`w-full rounded-2xl px-5 py-4 border outline-none
               ${
                 errors.email
                   ? "border-red-400 bg-red-50"
@@ -53,7 +61,7 @@ const Login = () => {
           />
           {errors.email && (
             <p className="mt-1 text-sm text-red-600">
-              {errors.email}
+              {errors.email.message}
             </p>
           )}
         </div>
@@ -63,20 +71,18 @@ const Login = () => {
           <label className="block text-sm font-semibold mb-2">
             Password
           </label>
-
           <div className="relative">
             <input
               type={showPassword ? "text" : "password"}
               {...register("password")}
               placeholder="Enter your password"
-              className={`w-full rounded-2xl px-5 py-4 pr-12 outline-none border
+              className={`w-full rounded-2xl px-5 py-4 pr-12 border outline-none
                 ${
                   errors.password
                     ? "border-red-400 bg-red-50"
                     : "border-gray-300 bg-gray-200 focus:border-gray-400"
                 }`}
             />
-
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
@@ -85,16 +91,15 @@ const Login = () => {
               {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>
           </div>
-
           {errors.password && (
             <p className="mt-1 text-sm text-red-600">
-              {errors.password}
+              {errors.password.message}
             </p>
           )}
         </div>
 
         {/* Forgot password */}
-        <div className="flex justify-end text-sm">
+        <div className="text-sm">
           <Link
             to="/forgot-password"
             className="font-semibold text-blue-600 hover:text-blue-800"
@@ -103,19 +108,14 @@ const Login = () => {
           </Link>
         </div>
 
-        {/* Submit */}
-        <button
-          disabled={!isValid || loading}
+        <Button
           type="submit"
-          className={`w-full rounded-xl py-3 font-semibold transition
-            ${
-              !isValid || loading
-                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                : "bg-amber-400 hover:bg-amber-500"
-            }`}
+          loading={loading}
+          loadingText="Signing in..."
+          disabled={!isValid}
         >
-          {loading ? "Signing in..." : "Sign In"}
-        </button>
+          Sign In
+        </Button>
       </form>
 
       {/* Register */}

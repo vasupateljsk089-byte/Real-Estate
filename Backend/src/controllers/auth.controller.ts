@@ -7,6 +7,7 @@ import { MESSAGES } from "@constants/messages";
 import {
   generateAccessToken,
   generateResetToken,
+  verifyRefreshToken,
   verifyResetToken,
 } from "@utils/tokenService.js";
 
@@ -138,13 +139,14 @@ export const forgotPassword = async (
 
     // 🔒 Do not reveal user existence
     if (!user) {
-      return res.status(200).json({
-        success: true,
+      return res.status(400).json({
+        success: false,
         message: MESSAGES.AUTH.OTP_SENT_IF_EXISTS,
       });
     }
 
     const otp:string = Math.floor(100000 + Math.random() * 900000).toString();
+    console.log("Generated Otp",otp);
 
     const resetToken = generateResetToken({ email, otp });
 
@@ -236,6 +238,68 @@ export const resetPassword = async (
       success: false,
       message: error.message,
       code: error.code,
+    });
+  }
+};
+
+export const refreshTokens = async (
+  req: Request,
+  res: Response<ApiResponse>
+) => {
+  try {
+    const refreshToken = req.cookies?.refreshToken;
+
+    if (!refreshToken) {
+      return res.status(401).json({
+        success: false,
+        message: "Refresh token missing",
+        code: "REFRESH_TOKEN_MISSING",
+      });
+    }
+
+    // Verify refresh token
+    const decoded = verifyRefreshToken(refreshToken);
+
+    // Fetch user
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.id },
+      select: {
+        id: true,
+        email: true,
+      },
+    });
+
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: "User not found",
+        code: "INVALID_REFRESH_TOKEN",
+      });
+    }
+
+    // Generate new access token
+    const newAccessToken = generateAccessToken({
+      userId: user.id,
+      email: user.email,
+    });
+
+    // Set access token cookie
+    res.cookie("accessToken", newAccessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 15 * 60 * 1000, 
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Access token refreshed",
+    });
+  } catch (error: any) {
+    return res.status(401).json({
+      success: false,
+      message: error.message || "Refresh token invalid",
+      code: error.code || "REFRESH_FAILED",
     });
   }
 };

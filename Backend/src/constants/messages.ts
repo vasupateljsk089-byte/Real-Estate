@@ -14,7 +14,7 @@ export const MESSAGES = {
     // Forgot password / OTP
     EMAIL_REQUIRED: "Email is required",
     OTP_SENT: "OTP sent to your email",
-    OTP_SENT_IF_EXISTS: "If this email exists, OTP has been sent",
+    OTP_SENT_IF_EXISTS: "Please enter registered email address.",
     OTP_FAILED: "Failed to send OTP",
     INVALID_OTP: "Invalid OTP",
     OTP_VERIFIED: "OTP verified successfully",
