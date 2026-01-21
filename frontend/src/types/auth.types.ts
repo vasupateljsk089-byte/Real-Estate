@@ -6,7 +6,7 @@ export interface User {
     chatId: string[];
   }
   
-  
+export type StoredUser = Omit<User, "email">;  
   export interface AuthState {
     loading: boolean;
     isAuthenticated: boolean;

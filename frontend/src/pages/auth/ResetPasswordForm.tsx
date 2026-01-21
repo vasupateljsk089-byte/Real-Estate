@@ -1,48 +1,54 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FiLock, FiEye, FiEyeOff } from "react-icons/fi";
+import toast from "react-hot-toast";
+import { apiConnector } from "@/api/axios";
+import { useZodForm } from "@/hooks/useZodForm";
+import { resetPasswordSchema } from "@/validation/auth.validation";
+import type { ApiResponse } from "@/types/api.types";
 
-export default function ResetPasswordForm() {
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+const ResetPassword = () => {
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] =
+    useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+
+  const { values, errors, isValid, register } =
+    useZodForm(resetPasswordSchema);
 
   const navigate = useNavigate();
 
-  const handleReset = async (e) => {
+  const handleReset = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
-
-    if (!password || !confirmPassword) {
-      setError("Both fields are required");
-      return;
-    }
-
-    if (password.length < 6) {
-      setError("Password must be at least 6 characters");
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      setError("Passwords do not match");
-      return;
-    }
+    if (!isValid) return;
 
     try {
       setLoading(true);
 
-      await apiConnector.post("/auth/reset-password", {
-        newPassword: password,
-        resetToken: localStorage.getItem("resetToken"),
-      });
+      const res = await apiConnector<ApiResponse>(
+        "POST",
+        "/auth/reset-password",
+        {
+          newPassword: values.password,
+          resetToken: localStorage.getItem("resetToken"),
+        }
+      );
+
+      if (!res.data.success) {
+        throw new Error(res.data.message);
+      }
 
       localStorage.removeItem("resetToken");
+
+      toast.success(res.data.message || "Password reset successful");
+
       navigate("/login");
-    } catch (err) {
-      setError(err.response?.data?.message || "Failed to reset password");
+    } catch (error: any) {
+      toast.error(
+        error?.response?.data?.message ||
+          error?.message ||
+          "Failed to reset password"
+      );
     } finally {
       setLoading(false);
     }
@@ -50,84 +56,105 @@ export default function ResetPasswordForm() {
 
   return (
     <>
-      {/* HEADER */}
+      {/* Header */}
       <div className="text-center mb-10">
-      
-        <h2 className="font-heading text-3xl font-bold text-heading mb-2">
+        <h2 className="text-3xl font-bold mb-2">
           Reset Password
         </h2>
-        <p className="text-body text-lg">
+        <p className="text-gray-500">
           Create a new secure password
         </p>
       </div>
 
-      {/* ERROR */}
-      {error && (
-        <div className="mb-6 rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-600 text-center">
-          {error}
-        </div>
-      )}
-
-      {/* FORM */}
+      {/* Form */}
       <form onSubmit={handleReset} className="space-y-6">
-        {/* NEW PASSWORD */}
+        {/* New Password */}
         <div>
-          <label className="block text-sm font-semibold text-heading mb-3">
+          <label className="block text-sm font-semibold mb-3">
             New Password
           </label>
 
           <div className="relative">
-            <FiLock className="absolute left-4 top-1/2 -translate-y-1/2 text-muted" />
+            <FiLock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+
             <input
               type={showPassword ? "text" : "password"}
+              {...register("password")}
               placeholder="Enter new password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-2xl border border-border pl-12 pr-12 py-4 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+              className={`w-full rounded-2xl pl-12 pr-12 py-4 text-sm outline-none border
+                ${
+                  errors.password
+                    ? "border-red-400 bg-red-50"
+                    : "border-gray-300 bg-gray-200 focus:border-gray-400"
+                }`}
             />
 
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-muted hover:text-brand transition"
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-600"
             >
               {showPassword ? <FiEyeOff /> : <FiEye />}
             </button>
           </div>
+
+          {errors.password && (
+            <p className="mt-1 text-sm text-red-600">
+              {errors.password}
+            </p>
+          )}
         </div>
 
-        {/* CONFIRM PASSWORD */}
+        {/* Confirm Password */}
         <div>
-          <label className="block text-sm font-semibold text-heading mb-3">
+          <label className="block text-sm font-semibold mb-3">
             Confirm Password
           </label>
 
           <div className="relative">
-            <FiLock className="absolute left-4 top-1/2 -translate-y-1/2 text-muted" />
+            <FiLock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+
             <input
               type={showConfirmPassword ? "text" : "password"}
+              {...register("confirmPassword")}
               placeholder="Confirm new password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              className="w-full rounded-2xl border border-border pl-12 pr-4 py-4 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+              className={`w-full rounded-2xl pl-12 pr-12 py-4 text-sm outline-none border
+                ${
+                  errors.confirmPassword
+                    ? "border-red-400 bg-red-50"
+                    : "border-gray-300 bg-gray-200 focus:border-gray-400"
+                }`}
             />
+
             <button
               type="button"
-              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-muted hover:text-brand transition"
+              onClick={() =>
+                setShowConfirmPassword(!showConfirmPassword)
+              }
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-600"
             >
               {showConfirmPassword ? <FiEyeOff /> : <FiEye />}
             </button>
           </div>
+
+          {errors.confirmPassword && (
+            <p className="mt-1 text-sm text-red-600">
+              {errors.confirmPassword}
+            </p>
+          )}
         </div>
 
+        {/* Submit */}
         <button
           type="submit"
-          disabled={loading}
+          disabled={!isValid || loading}
           className="
-            w-full rounded-xl bg-amber-400 text-black py-3 font-semibold text-lg
-            hover:bg-brand-dark transition-all duration-200
-            disabled:opacity-60 disabled:cursor-not-allowed
+            w-full rounded-xl py-3 font-semibold text-lg transition
+            bg-amber-400 hover:bg-amber-500
+            disabled:bg-gray-300
+            disabled:text-gray-500
+            disabled:cursor-not-allowed
+            disabled:hover:bg-gray-300
             shadow-lg
           "
         >
@@ -136,4 +163,6 @@ export default function ResetPasswordForm() {
       </form>
     </>
   );
-}
+};
+
+export default ResetPassword;

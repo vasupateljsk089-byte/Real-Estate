@@ -6,6 +6,7 @@ import { AUTH_ENDPOINTS } from "@/api/endpoints";
 
 import { setLoading, setUser, logout } from "@/store/slices/auth.slice";
 import type { AppDispatch } from "@/store";
+import { storage } from "@/utils/storage";
 
 import type {
   LoginPayload,
@@ -31,7 +32,15 @@ export const login =
         throw new Error(res.data.message);
       }
 
+      const user = res.data.data;
+
+      // 1️ Update redux state with user mail and id 
       dispatch(setUser(res.data.data));
+
+      // 2️ Save ONLY safe fields to localStorage
+      const { email, ...safeUser } = user;
+      storage.setUser(safeUser);
+
       toast.success(res.data.message || "Login successful 🎉");
 
       navigate("/");
@@ -58,11 +67,12 @@ export const registerUser =
         userData
       );
 
-      if (!res.data.success || !res.data.data) {
+      console.log("response in reg:", res);
+      if (!res.data.success) {
         throw new Error(res.data.message);
       }
 
-      dispatch(setUser(res.data.data));
+      // dispatch(setUser(res.data.data));
       toast.success(res.data.message || "Account created successfully 🎉");
 
       navigate("/login");

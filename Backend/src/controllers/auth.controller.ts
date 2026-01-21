@@ -62,7 +62,6 @@ export const login = async (
 ): Promise<Response<ApiResponse>> => {
   try {
     const { email, password } = req.body;
-
     const user = await prisma.user.findUnique({
       where: { email },
       select: {
