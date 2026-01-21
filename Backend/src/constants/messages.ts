@@ -1,5 +1,12 @@
 export const MESSAGES = {
   AUTH: {
+
+    UNAUTHORIZED: "Unauthorized",
+    TOKEN_MISSING: "Access token missing",
+    TOKEN_EXPIRED: "Access token expired",
+    INVALID_TOKEN: "Invalid access token",
+    USER_NOT_FOUND: "User not found",
+    ME_SUCCESS: "User fetched successfully",
     // Login / Register
     INVALID_CREDENTIALS: "Invalid email or password",
     LOGIN_SUCCESS: "Login successful",
@@ -23,9 +30,9 @@ export const MESSAGES = {
     PASSWORD_RESET_SUCCESS: "Password reset successfully",
 
     AUTH_REQUIRED: "Authentication required",
-    USER_NOT_FOUND: "User no longer exists",
+    // USER_NOT_FOUND: "User no longer exists",
     SESSION_EXPIRED: "Session expired",
-    INVALID_TOKEN: "Invalid authentication token",
+    // INVALID_TOKEN: "Invalid authentication token",
   },
 
   USER: {
@@ -100,5 +107,6 @@ export const MESSAGES = {
     SUCCESS: "Success",
     INTERNAL_ERROR: "Internal server error",
     INVALID_REQUEST: "Invalid request",
+    
   },
 } as const;

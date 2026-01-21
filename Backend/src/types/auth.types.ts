@@ -23,7 +23,7 @@ export interface ResetPasswordPayload {
   resetToken: string;
 }
 
-export interface AccessTokenPayload {
+export interface TokenPayload {
   userId: string;
   email: string;
 }

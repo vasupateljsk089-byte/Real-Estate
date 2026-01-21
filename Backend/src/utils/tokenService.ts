@@ -5,7 +5,7 @@ import jwt, {
 } from "jsonwebtoken";
 
 import {
-  AccessTokenPayload,
+  TokenPayload,
   ResetTokenPayload,
   TokenOptions,
 } from "@types";
@@ -67,7 +67,7 @@ const handleJwtError = (
 
 // ACCESS TOKEN
 export const generateAccessToken = (
-  user: AccessTokenPayload
+  user: TokenPayload
 ): string => {
   return jwt.sign(
     {
@@ -81,12 +81,12 @@ export const generateAccessToken = (
 
 export const verifyAccessToken = (
   token: string
-): AccessTokenPayload => {
+): TokenPayload => {
   try {
     return jwt.verify(
       token,
       ACCESS_TOKEN_SECRET
-    ) as AccessTokenPayload;
+    ) as TokenPayload;
   } catch (error) {
     return handleJwtError(error, "access token");
   }
@@ -94,10 +94,13 @@ export const verifyAccessToken = (
 
 // REFRESH TOKEN
 export const generateRefreshToken = (
-  user: { id: string }
+  user: TokenPayload
 ): string => {
   return jwt.sign(
-    { id: user.id },
+    {
+      userId: user.userId,
+      email: user.email,
+    },
     REFRESH_TOKEN_SECRET,
     REFRESH_TOKEN_OPTIONS as SignOptions
   );
@@ -105,12 +108,12 @@ export const generateRefreshToken = (
 
 export const verifyRefreshToken = (
   token: string
-): { id: string } & JwtPayload => {
+): TokenPayload => {
   try {
     return jwt.verify(
       token,
       REFRESH_TOKEN_SECRET
-    ) as { id: string } & JwtPayload;
+    ) as TokenPayload
   } catch (error) {
     return handleJwtError(error, "refresh token");
   }

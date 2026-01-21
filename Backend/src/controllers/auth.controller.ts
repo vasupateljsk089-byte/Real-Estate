@@ -1,18 +1,69 @@
 import bcrypt from "bcrypt";
 import prisma from "@lib/prisma";
 import { Request, Response } from "express";
-import { RegisterPayload, LoginPayload, ForgotPasswordPayload, VerifyOtpPayload, ResetPasswordPayload, AccessTokenPayload, ApiResponse} from "@types";
+import { RegisterPayload, LoginPayload, ForgotPasswordPayload, VerifyOtpPayload, ResetPasswordPayload, TokenPayload, ApiResponse} from "@types";
 import { MESSAGES } from "@constants/messages";
 
 import {
   generateAccessToken,
+  generateRefreshToken,
   generateResetToken,
+  verifyAccessToken,
   verifyRefreshToken,
   verifyResetToken,
 } from "@utils/tokenService.js";
 
 import { sendMail } from "@utils/mailService.js";
 import { otpTemplate } from "@utils/emailTemplates";
+
+
+export const getMe = async (
+  req: Request,
+  res: Response<ApiResponse>
+) => {
+  try {
+    const token = req.cookies.accessToken;
+
+    if (!token) {
+      return res.status(401).json({
+        success: false,
+        message: MESSAGES.AUTH.TOKEN_MISSING,
+        code: "TOKEN_MISSING",
+      });
+    }
+
+    const payload = verifyAccessToken(token);
+
+    const user = await prisma.user.findUnique({
+      where: { id: payload.userId },
+      select: {
+        id: true,
+        username: true,
+        avtar: true,
+      },
+    });
+
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: MESSAGES.AUTH.USER_NOT_FOUND,
+        code: "USER_NOT_FOUND",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: MESSAGES.AUTH.ME_SUCCESS,
+      data: user,
+    });
+  } catch (error: any) {
+    return res.status(error.statusCode || 401).json({
+      success: false,
+      message: error.message || MESSAGES.AUTH.UNAUTHORIZED,
+      code: error.code || "AUTH_ERROR",
+    });
+  }
+};
 
 // Request<{}, {}, RegisterPayload>, => Request<Params, ResBody, ReqBody, Query>
 export const register = async (
@@ -82,23 +133,31 @@ export const login = async (
       });
     }
 
-    const payload: AccessTokenPayload = {
+    const payload: TokenPayload = {
       userId: user.id,
       email: user.email,
     };
 
     const accessToken = generateAccessToken(payload);
+    const refreshToken = generateRefreshToken(payload);
 
     // remove password before sending
     const { password: _, ...userInfo } = user;
 
     return res
-      .cookie("token", accessToken, {
-        httpOnly: true,
-        sameSite: "strict",
-        maxAge: 24 * 60 * 60 * 1000,
-        // secure: true, // enable in production
-      })
+    .cookie("accessToken", accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict", // or "lax" (see explanation)
+      maxAge: 15 * 60 * 1000, // 15 minutes
+    })  
+    .cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      path: "/auth/refresh",
+    })
       .status(200)
       .json({
         success: true,
@@ -120,7 +179,11 @@ export const logout = (
   _req: Request,
   res: Response<ApiResponse>
 ): Response<ApiResponse> => {
-  return res.clearCookie("token").status(200).json({
+  return res
+  .clearCookie("accessToken")
+  .clearCookie("refreshToken", { path: "/auth/refresh" })
+  .status(200)
+  .json({
     success: true,
     message: MESSAGES.AUTH.LOGOUT_SUCCESS,
   });
@@ -248,7 +311,7 @@ export const refreshTokens = async (
 ) => {
   try {
     const refreshToken = req.cookies?.refreshToken;
-
+    console.log("refresh token api",Date.now().toLocaleString())
     if (!refreshToken) {
       return res.status(401).json({
         success: false,
@@ -262,7 +325,7 @@ export const refreshTokens = async (
 
     // Fetch user
     const user = await prisma.user.findUnique({
-      where: { id: decoded.id },
+      where: { id: decoded.userId },
       select: {
         id: true,
         email: true,
