@@ -1,12 +1,17 @@
 import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
 
+type Gender =  'male' | 'female' | 'other';
+
 export interface User {
   id: string;
   email: string;
   username: string;
   avtar: string | null;
   chatId: string[];
+  gender? : Gender;
+  phone?:string;
+  city?: string;
 }
  
 

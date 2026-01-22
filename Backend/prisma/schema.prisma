@@ -10,7 +10,6 @@ generator client {
 
 datasource db {
   provider = "mongodb"
-  url      = env("DATABASE_URL")
 }
 
 model User {
@@ -18,15 +17,22 @@ model User {
   email     String   @unique                      // Unique constraint on the email field
   username  String                                
   password  String
-  avtar     String?                               // Optional field
+  avtar     String?                              // Optional field
+  phone      String?        // Optional
+  gender     Gender?        // Optional
+  city       String?        // Optional
   createdAt DateTime @default(now())              // Default to the current timestamp
   posts     Post[]                                // One-to-many relation with the Post model
   savedPost SavedPost[] // One-to-many relation with the SavedPost
   chats Chat[] @relation(fields: [chatId], references: [id])
   chatId String[] @db.ObjectId
-
 }
 
+enum Gender {
+  male
+  female
+  other
+}
 
 
 model Post {

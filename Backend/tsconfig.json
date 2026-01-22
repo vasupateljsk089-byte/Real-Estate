@@ -16,7 +16,7 @@
       "@utils/*": ["utils/*"],
       "@middleware/*": ["middleware/*"],
       "@config/*": ["config/*"],
-      "@lib/*": ["lib/*"]
+      "@lib/*": ["lib/*"],
     }
   },
   "include": ["src"]

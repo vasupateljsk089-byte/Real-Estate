@@ -1,7 +1,11 @@
-export interface UpdateUserPayload {
-  avtar?: string;
+type Gender = 'male'| 'female' | 'other'
+
+export interface UpdateProfilePayload {
   username?: string;
-  email?: string;
+  phone?: string;
+  gender?: Gender;
+  city?: string;
+  avatar?: string;
 }
 
 export interface SavePostPayload {

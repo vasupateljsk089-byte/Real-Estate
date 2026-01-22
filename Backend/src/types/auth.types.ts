@@ -32,3 +32,4 @@ export interface ResetTokenPayload {
   email: string;
   otp: string;
 }
+

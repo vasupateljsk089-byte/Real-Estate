@@ -12,12 +12,13 @@ export const AUTH_ENDPOINTS = {
 };
 
 export const USER_ENDPOINTS = {
-  GET_USERS: `${BASE_URL}/user/`,
+  GET_USERS: `${BASE_URL}/user`,
   GET_USER_BY_ID: (id:string) => `${BASE_URL}/user/${id}`,
   UPDATE_USER: (id:string) => `${BASE_URL}/user/${id}`,
     DELETE_USER: (id:string) => `${BASE_URL}/user/${id}`,
     SAVE_POST: `${BASE_URL}/user/save`,
     PROFILE_POSTS: `${BASE_URL}/user/profilePosts`,
+    UPDATE_PROFILE:`${BASE_URL}/user/profile`
 };
 
 export const POST_ENDPOINTS = {

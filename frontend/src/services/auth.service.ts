@@ -20,19 +20,37 @@ import type {
 
 import type { ApiResponse } from "@/types/api.types";
 
-export const getMe = () => async (dispatch: AppDispatch) => {
+// export const loadUser = () => async (dispatch: AppDispatch) => {
+//   try {
+
+//     const res = await apiConnector<ApiResponse<User>>(
+//       "GET",
+//       AUTH_ENDPOINTS.ME
+//     );
+
+//     if (res.data.success && res.data.data) {
+//       dispatch(setUser(res.data.data));
+//     } else {
+//       dispatch(setAuthLoading(false));
+//     }
+//   } catch {
+//     dispatch(setAuthLoading(false));
+//   }
+// };
+
+export const loadUser = () => async (dispatch: AppDispatch) => {
   try {
-    const res = await apiConnector<ApiResponse<User>>(
+    dispatch(setAuthLoading(true));
+
+    const { data } = await apiConnector<ApiResponse<User>>(
       "GET",
       AUTH_ENDPOINTS.ME
     );
-
-    if (res.data.success && res.data.data) {
-      dispatch(setUser(res.data.data));
-    } else {
-      dispatch(setAuthLoading(false));
-    }
+    if(data.data)
+    dispatch(setUser(data.data));
   } catch {
+    dispatch(logout());
+  } finally {
     dispatch(setAuthLoading(false));
   }
 };

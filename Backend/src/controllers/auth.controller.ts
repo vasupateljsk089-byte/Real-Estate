@@ -22,18 +22,72 @@ export const getMe = async (
   res: Response<ApiResponse>
 ) => {
   try {
-    const token = req.cookies.accessToken;
+    const accessToken = req.cookies.accessToken;
+    const refreshToken = req.cookies.refreshToken;
+    // console.log("refresh ",refreshToken)
+    let payload: { userId: string } | null = null;
 
-    if (!token) {
-      return res.status(401).json({
-        success: false,
-        message: MESSAGES.AUTH.TOKEN_MISSING,
-        code: "TOKEN_MISSING",
+    //  Try access token first
+    if (accessToken) {
+      try {
+        payload = verifyAccessToken(accessToken);
+      } catch (err: any) {
+        // Access token expired → allow refresh fallback
+        if (err.code !== "TOKEN_EXPIRED") {
+          return res.status(401).json({
+            success: false,
+            message: "Invalid access token",
+            code: "INVALID_ACCESS_TOKEN",
+          });
+        }
+      }
+    }
+
+    /**
+       Fallback to refresh token
+     */
+    if (!payload) {
+      if (!refreshToken) {
+        return res.status(401).json({
+          success: false,
+          message: "Authentication required. Please login again.",
+          code: "UNAUTHORIZED",
+        });
+      }
+
+      let decoded: { userId: string; email: string };
+
+      try {
+        decoded = verifyRefreshToken(refreshToken);
+      } catch {
+        return res.status(401).json({
+          success: false,
+          message: "Session expired. Please login again.",
+          code: "REFRESH_TOKEN_EXPIRED",
+        });
+      }
+
+      payload = { userId: decoded.userId };
+
+      /**
+       * Issue NEW access token
+       */
+      const newAccessToken = generateAccessToken({
+        userId: decoded.userId,
+        email: decoded.email,
+      });
+
+      res.cookie("accessToken", newAccessToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        maxAge: 15 * 60 * 1000,
       });
     }
 
-    const payload = verifyAccessToken(token);
-
+    /**
+     * STEP 3: Fetch user
+     */
     const user = await prisma.user.findUnique({
       where: { id: payload.userId },
       select: {
@@ -48,24 +102,29 @@ export const getMe = async (
     if (!user) {
       return res.status(401).json({
         success: false,
-        message: MESSAGES.AUTH.USER_NOT_FOUND,
+        message: "User account not found",
         code: "USER_NOT_FOUND",
       });
     }
 
+    /**
+     * SUCCESS
+     */
     return res.status(200).json({
       success: true,
-      message: MESSAGES.AUTH.ME_SUCCESS,
+      message: "Session restored successfully",
       data: user,
     });
-  } catch (error: any) {
-    return res.status(error.statusCode || 401).json({
+
+  } catch (error) {
+    return res.status(401).json({
       success: false,
-      message: error.message || MESSAGES.AUTH.UNAUTHORIZED,
-      code: error.code || "AUTH_ERROR",
+      message: "Unauthorized access",
+      code: "AUTH_ERROR",
     });
   }
 };
+
 
 // Request<{}, {}, RegisterPayload>, => Request<Params, ResBody, ReqBody, Query>
 export const register = async (
@@ -159,7 +218,7 @@ export const login = async (
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-      path: "/api/auth/refresh",
+      // path: "/api/auth/refresh",
     })
       .status(200)
       .json({
@@ -314,19 +373,27 @@ export const refreshTokens = async (
   res: Response<ApiResponse>
 ) => {
   try {
-    const refreshToken = req.cookies?.refreshToken;
+    const refreshToken = req.cookies.refreshToken;
 
-    console.log("Refresh token => ",refreshToken)
     if (!refreshToken) {
       return res.status(401).json({
         success: false,
-        message: "Refresh token missing",
+        message: "Refresh token missing. Please login again.",
         code: "REFRESH_TOKEN_MISSING",
       });
     }
 
+    let decoded: { userId: string; email: string };
 
-    const decoded = verifyRefreshToken(refreshToken);
+    try {
+      decoded = verifyRefreshToken(refreshToken);
+    } catch {
+      return res.status(401).json({
+        success: false,
+        message: "Session expired. Please login again.",
+        code: "REFRESH_TOKEN_EXPIRED",
+      });
+    }
 
     const user = await prisma.user.findUnique({
       where: { id: decoded.userId },
@@ -336,7 +403,7 @@ export const refreshTokens = async (
     if (!user) {
       return res.status(401).json({
         success: false,
-        message: "User not found",
+        message: "User not found for this session",
         code: "INVALID_REFRESH_TOKEN",
       });
     }
@@ -346,10 +413,9 @@ export const refreshTokens = async (
       email: user.email,
     });
 
-    console.log("Access gen after expire",newAccessToken.slice(0,5));
     res.cookie("accessToken", newAccessToken, {
       httpOnly: true,
-      secure:false,
+      secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
       maxAge: 15 * 60 * 1000,
     });
@@ -358,11 +424,12 @@ export const refreshTokens = async (
       success: true,
       message: "Access token refreshed",
     });
-  } catch (error: any) {
+
+  } catch {
     return res.status(401).json({
       success: false,
-      message: error.message || "Refresh failed",
-      code: error.code || "REFRESH_FAILED",
+      message: "Unable to refresh session",
+      code: "REFRESH_FAILED",
     });
   }
 };

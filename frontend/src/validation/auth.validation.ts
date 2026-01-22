@@ -68,18 +68,36 @@ export const resetPasswordSchema = z
   path: ["confirmPassword"],
 });
 
+
 export const profileSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters"),
+  name: z
+    .string()
+    .min(2, "Name must be at least 2 characters")
+    .optional()
+    .or(z.literal("")),
+
   email: z
     .string()
     .trim()
     .toLowerCase()
     .regex(emailRegex, "Please enter a valid email address"),
-    phone: z
+
+  phone: z
     .string()
     .min(10, "Phone number must be at least 10 digits")
     .optional()
-    .or(z.literal(""))
+    .or(z.literal("")),
+
+  city: z
+    .string()
+    .min(2, "City must be at least 2 characters")
+    .optional()
+    .or(z.literal("")),
+
+  gender: z
+    .enum(["male", "female", "other"])
+    .optional()
+    .or(z.literal("")),
 });
 
 

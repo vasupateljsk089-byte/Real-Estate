@@ -1,9 +1,9 @@
 import { Request, Response } from "express";
 import prisma from "@lib/prisma";
-import bcrypt from "bcrypt";
 
-import { ApiResponse, UpdateUserPayload, SavePostPayload } from "@types";
+import { ApiResponse, SavePostPayload ,UpdateProfilePayload } from "@types";
 import { MESSAGES } from "@constants/messages";
+import {uploadToCloudinary} from "@utils/uploadToCloudinary";
 
 export const getUsers = async (
   _req: Request,
@@ -34,48 +34,48 @@ export const getUsers = async (
   }
 };
 
-export const updateUser = async (
-  req: Request<{ id: string }, {}, UpdateUserPayload>,
-  res: Response<ApiResponse>
-): Promise<Response<ApiResponse>> => {
-  const id = req.params.id;
-  const tokenUserId = req.userId;
+// export const updateUser = async (
+//   req: Request<{ id: string }, {}, UpdateUserPayload>,
+//   res: Response<ApiResponse>
+// ): Promise<Response<ApiResponse>> => {
+//   const id = req.params.id;
+//   const tokenUserId = req.userId;
 
-  if (id !== tokenUserId) {
-    return res.status(403).json({
-      success: false,
-      message: MESSAGES.USER.NOT_AUTHORIZED,
-      code: "NOT_AUTHORIZED",
-    });
-  }
+//   if (id !== tokenUserId) {
+//     return res.status(403).json({
+//       success: false,
+//       message: MESSAGES.USER.NOT_AUTHORIZED,
+//       code: "NOT_AUTHORIZED",
+//     });
+//   }
 
-  const {avtar, ...inputs } = req.body;
+//   const {avtar, ...inputs } = req.body;
 
-  try {
+//   try {
 
-    const updatedUser = await prisma.user.update({
-      where: { id },
-      data: {
-        ...inputs,
-        ...(avtar && { avtar }),
-      },
-    });
+//     const updatedUser = await prisma.user.update({
+//       where: { id },
+//       data: {
+//         ...inputs,
+//         ...(avtar && { avtar }),
+//       },
+//     });
 
-    const { password: _, ...safeUser } = updatedUser;
+//     const { password: _, ...safeUser } = updatedUser;
 
-    return res.status(200).json({
-      success: true,
-      message: MESSAGES.USER.UPDATE_SUCCESS,
-      data: safeUser,
-    });
-  } catch (error) {
-    console.error("Update user error:", error);
-    return res.status(500).json({
-      success: false,
-      message: MESSAGES.USER.UPDATE_FAILED,
-    });
-  }
-};
+//     return res.status(200).json({
+//       success: true,
+//       message: MESSAGES.USER.UPDATE_SUCCESS,
+//       data: safeUser,
+//     });
+//   } catch (error) {
+//     console.error("Update user error:", error);
+//     return res.status(500).json({
+//       success: false,
+//       message: MESSAGES.USER.UPDATE_FAILED,
+//     });
+//   }
+// };
 
 export const deleteUser = async (
   req: Request<{ id: string }>,
@@ -175,7 +175,7 @@ export const profilePosts = async (
       include: { post: true },
     });
 
-    const savedPosts = saved.map((item) => item.post);
+    const savedPosts = saved.map((item : any) => item.post);
 
     return res.status(200).json({
       success: true,
@@ -190,6 +190,59 @@ export const profilePosts = async (
     return res.status(500).json({
       success: false,
       message: MESSAGES.USER.PROFILE_POSTS_FAILED,
+    });
+  }
+};
+
+export const updateProfile = async (
+  req: Request<{}, {}, UpdateProfilePayload>,
+  res: Response
+) => {
+  try {
+    const userId = req.userId; // from auth middleware
+
+    const { username, phone, gender, city } =
+      req.body;
+
+    const updateData: UpdateProfilePayload = {
+      username,
+      phone,
+      gender,
+      city,
+    };
+
+    // 🖼 Avatar upload
+    if (req.file) {
+      const avatarUrl = await uploadToCloudinary(
+        req.file.buffer,
+        "avatars"
+      );
+      updateData.avatar = avatarUrl;
+    }
+
+    const user = await prisma.user.update({
+      where: { id: userId },
+      data: updateData,
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        avatar: true,
+        phone: true,
+        gender: true,
+        city: true,
+      },
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Profile updated successfully",
+      data: user,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Failed to update profile",
     });
   }
 };
