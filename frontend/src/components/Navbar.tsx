@@ -6,13 +6,15 @@ const Navbar = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
 
-  const { isAuthenticated, user } = useAppSelector(
+  const { authLoading, isAuthenticated, user } = useAppSelector(
     (state) => state.auth
   );
 
   const handleLogout = () => {
     dispatch(logoutUser(navigate));
   };
+
+   if (authLoading) return null;
 
   return (
     <header className="fixed top-0 left-0 w-full z-50 bg-transparent backdrop-blur-xl">
@@ -91,11 +93,11 @@ const Navbar = () => {
               <div className="relative group">
                 <img
                   src={
-                    user?.avatar ||
-                    "https://ui-avatars.com/api/?name=User&background=C2A68C&color=000"
+                    user?.avtar ||
+                    "https://images.unsplash.com/photo-1723110994499-df46435aa4b3?q=80&w=1179&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
                   }
                   alt="profile"
-                  className="w-10 h-10 rounded-full cursor-pointer border-2 border-[#C2A68C]"
+                  className="w-10 h-10 rounded-full cursor-pointer"
                 />
 
                 {/* DROPDOWN */}

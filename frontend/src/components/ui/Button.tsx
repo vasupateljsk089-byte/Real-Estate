@@ -10,6 +10,7 @@ import type {
     children: ReactNode;
     loading?: boolean;
     loadingText?: string;
+    disabled?:boolean;
   }
   
   export const Button = ({

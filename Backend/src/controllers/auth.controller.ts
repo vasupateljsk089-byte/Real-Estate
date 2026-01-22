@@ -40,6 +40,8 @@ export const getMe = async (
         id: true,
         username: true,
         avtar: true,
+        email: true,
+        chatId: true,
       },
     });
 
@@ -114,6 +116,7 @@ export const login = async (
 ): Promise<Response<ApiResponse>> => {
   try {
     const { email, password } = req.body;
+    console.log("req body",req.body)
     const user = await prisma.user.findUnique({
       where: { email },
       select: {
@@ -156,7 +159,7 @@ export const login = async (
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-      path: "/auth/refresh",
+      path: "/api/auth/refresh",
     })
       .status(200)
       .json({
@@ -305,13 +308,15 @@ export const resetPassword = async (
   }
 };
 
+
 export const refreshTokens = async (
   req: Request,
   res: Response<ApiResponse>
 ) => {
   try {
     const refreshToken = req.cookies?.refreshToken;
-    console.log("refresh token api",Date.now().toLocaleString())
+
+    console.log("Refresh token => ",refreshToken)
     if (!refreshToken) {
       return res.status(401).json({
         success: false,
@@ -320,16 +325,12 @@ export const refreshTokens = async (
       });
     }
 
-    // Verify refresh token
+
     const decoded = verifyRefreshToken(refreshToken);
 
-    // Fetch user
     const user = await prisma.user.findUnique({
       where: { id: decoded.userId },
-      select: {
-        id: true,
-        email: true,
-      },
+      select: { id: true, email: true },
     });
 
     if (!user) {
@@ -340,18 +341,17 @@ export const refreshTokens = async (
       });
     }
 
-    // Generate new access token
     const newAccessToken = generateAccessToken({
       userId: user.id,
       email: user.email,
     });
 
-    // Set access token cookie
+    console.log("Access gen after expire",newAccessToken.slice(0,5));
     res.cookie("accessToken", newAccessToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure:false,
       sameSite: "strict",
-      maxAge: 15 * 60 * 1000, 
+      maxAge: 15 * 60 * 1000,
     });
 
     return res.status(200).json({
@@ -361,7 +361,7 @@ export const refreshTokens = async (
   } catch (error: any) {
     return res.status(401).json({
       success: false,
-      message: error.message || "Refresh token invalid",
+      message: error.message || "Refresh failed",
       code: error.code || "REFRESH_FAILED",
     });
   }

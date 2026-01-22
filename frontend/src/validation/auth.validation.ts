@@ -68,8 +68,24 @@ export const resetPasswordSchema = z
   path: ["confirmPassword"],
 });
 
+export const profileSchema = z.object({
+  name: z.string().min(2, "Name must be at least 2 characters"),
+  email: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .regex(emailRegex, "Please enter a valid email address"),
+    phone: z
+    .string()
+    .min(10, "Phone number must be at least 10 digits")
+    .optional()
+    .or(z.literal(""))
+});
+
+
 export type RegisterForm = z.infer<typeof registerSchema>;
 export type LoginForm = z.infer<typeof loginSchema>;
 export type ForgotPasswordForm = z.infer<typeof forgotPasswordSchema>;
 export type VerifyOtpForm = z.infer<typeof verifyOtpSchema>;
 export type ResetPasswordForm = z.infer<  typeof resetPasswordSchema>;
+export type ProfileForm = z.infer<typeof profileSchema>;

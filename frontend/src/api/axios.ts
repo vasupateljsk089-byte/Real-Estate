@@ -5,6 +5,12 @@ import type{
   AxiosResponse,
 } from "axios";
 
+declare module "axios" {
+  export interface AxiosRequestConfig {
+    _retry?: boolean;
+  }
+}
+
 import {refreshAccessToken} from "./refresh";
 // An Axios instance is a pre-configured Axios client. 
 const axiosInstance: AxiosInstance = axios.create({
@@ -40,6 +46,7 @@ axiosInstance.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
+    
     if (
       error.response?.status === 401 &&
       error.response?.data?.code === "TOKEN_EXPIRED" &&
@@ -50,15 +57,13 @@ axiosInstance.interceptors.response.use(
       try {
         await refreshAccessToken();
         return axiosInstance(originalRequest);
-      } catch (refreshError) {
-        // Refresh failed → logout
+      } catch {
+        // ❗ HARD LOGOUT
         window.location.href = "/login";
-        return Promise.reject(refreshError);
+        return Promise.reject(error);
       }
     }
 
     return Promise.reject(error);
   }
 );
-
-

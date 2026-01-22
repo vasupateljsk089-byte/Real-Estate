@@ -67,13 +67,10 @@ const handleJwtError = (
 
 // ACCESS TOKEN
 export const generateAccessToken = (
-  user: TokenPayload
+  payload: TokenPayload
 ): string => {
   return jwt.sign(
-    {
-      userId: user.userId,
-      email: user.email,
-    },
+    payload,
     ACCESS_TOKEN_SECRET,
     ACCESS_TOKEN_OPTIONS as SignOptions
   );
@@ -94,13 +91,10 @@ export const verifyAccessToken = (
 
 // REFRESH TOKEN
 export const generateRefreshToken = (
-  user: TokenPayload
+  payload: TokenPayload
 ): string => {
   return jwt.sign(
-    {
-      userId: user.userId,
-      email: user.email,
-    },
+    payload,
     REFRESH_TOKEN_SECRET,
     REFRESH_TOKEN_OPTIONS as SignOptions
   );

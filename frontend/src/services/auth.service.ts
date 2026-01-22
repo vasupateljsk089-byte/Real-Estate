@@ -4,7 +4,8 @@ import type { NavigateFunction } from "react-router-dom";
 import { apiConnector } from "@/api/axios";
 import { AUTH_ENDPOINTS } from "@/api/endpoints";
 
-import { setLoading, setUser, logout } from "@/store/slices/auth.slice";
+import { setAuthLoading,setLoading, setUser, logout } from "@/store/slices/auth.slice";
+import type {User} from '@/store/slices/auth.slice'
 import type { AppDispatch } from "@/store";
 import { storage } from "@/utils/storage";
 
@@ -14,31 +15,27 @@ import type {
   ForgotPasswordPayload,
   ResetPasswordPayload,
   OtpPayload,
-  User,
   ForgotPasswordResponse,
 } from "@/types/auth.types";
 
 import type { ApiResponse } from "@/types/api.types";
 
-export const getMe =
-  () => async (dispatch: AppDispatch) => {
-    dispatch(setLoading(true));
+export const getMe = () => async (dispatch: AppDispatch) => {
+  try {
+    const res = await apiConnector<ApiResponse<User>>(
+      "GET",
+      AUTH_ENDPOINTS.ME
+    );
 
-    try {
-      const res = await apiConnector<ApiResponse<User>>(
-        "GET",
-        AUTH_ENDPOINTS.ME
-      );
-
-      if (!res.data.success || !res.data.data) {
-        throw new Error("Not authenticated");
-      }
-
+    if (res.data.success && res.data.data) {
       dispatch(setUser(res.data.data));
-    } catch {
-      dispatch(logout());
+    } else {
+      dispatch(setAuthLoading(false));
     }
-  };
+  } catch {
+    dispatch(setAuthLoading(false));
+  }
+};
 
 export const login =
   (data: LoginPayload, navigate: NavigateFunction) =>

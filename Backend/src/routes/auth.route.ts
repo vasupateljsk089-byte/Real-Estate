@@ -1,7 +1,8 @@
 import {Router} from 'express';
-import {register,login,logout,forgotPassword,verifyOtp,resetPassword,refreshTokens} from '@controllers/auth.controller';
+import {register,login,logout,forgotPassword,verifyOtp,resetPassword,refreshTokens, getMe} from '@controllers/auth.controller';
 const router=Router();
 
+router.get("/me",getMe);
 router.post('/register',register);
 router.post('/login',login);
 router.post('/logout',logout);

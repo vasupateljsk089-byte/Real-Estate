@@ -10,6 +10,7 @@ let refreshSubscribers: (() => void)[] = [];
 
 // add fail reqs in queue
 const subscribeTokenRefresh = (cb: () => void) => {
+  console.log("add sub",cb);
   refreshSubscribers.push(cb);
 };
 
@@ -21,7 +22,6 @@ const onRefreshed = () => {
 
 export const refreshAccessToken = async () => {
     // if refresh api already call then queue other   
-    console.log("api",)  
     if (isRefreshing) {
     return new Promise<void>((resolve) => {
       subscribeTokenRefresh(resolve);
@@ -29,11 +29,13 @@ export const refreshAccessToken = async () => {
   }
   // set api is called
   isRefreshing = true;
-
   try {
-    await apiConnector<ApiResponse>("POST",AUTH_ENDPOINTS.REFRESH);
-    // run subscriber (Queued Resquestes)
+    console.log("Called by interceptor")
+    await apiConnector<ApiResponse>("POST", AUTH_ENDPOINTS.REFRESH);
     onRefreshed();
+  } catch (error) {
+    refreshSubscribers = [];
+    throw error;
   } finally {
     isRefreshing = false;
   }

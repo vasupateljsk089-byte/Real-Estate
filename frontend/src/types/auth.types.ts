@@ -1,12 +1,6 @@
-export interface User {
-    id: string;
-    email: string;
-    username: string;
-    avatar: string | null;
-    chatId: string[];
-  }
-   
-  export interface LoginPayload {
+import type { User } from "@/store/slices/auth.slice";
+
+export interface LoginPayload {
     email: string;
     password: string;
   }

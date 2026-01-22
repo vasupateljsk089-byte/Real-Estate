@@ -2,9 +2,17 @@ import './App.css'
 import { Toaster } from "react-hot-toast";
 import { RouterProvider } from "react-router-dom";
 import { router } from '@/routes/routes';
-
+import {useAppDispatch} from '@/hooks/hooks';
+import { useEffect } from 'react';
+import {getMe} from '@/services/auth.service';
 
 export default function App() {
+  const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    dispatch(getMe());
+  }, [dispatch]);
+
   return (
     <>
     <RouterProvider router={router} />

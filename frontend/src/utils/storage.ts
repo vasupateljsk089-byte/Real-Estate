@@ -1,4 +1,4 @@
-import type { StoredUser } from "@/types/auth.types";
+import type { StoredUser } from "@/store/slices/auth.slice";
 
 const USER_KEY = "auth_user";
 const OTP_TOKEN = "resetToken";

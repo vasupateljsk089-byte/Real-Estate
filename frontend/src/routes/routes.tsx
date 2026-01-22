@@ -4,11 +4,12 @@ import { createBrowserRouter } from "react-router-dom";
 import Layout from "@/layout/Layout";
 import AuthLayout from "@/layout/AuthLayout";
 
+import ProtectedRoute from '@/routes/ProtectedRoute';
+
 /* pages */
 import Home from "../pages/home/Home";
 // import Listpage from "../pages/listPages/Listpages";
 // import Singlepage from "../pages/singlePage/Singlepage";
-// import Profile from "../pages/profilePage/Profile";
 // import UpdateProfile from "../pages/profileUpdate/Updateprofile";
 // import NewPostPage from "../pages/createPost/CreatePost";
 
@@ -18,6 +19,7 @@ import SignupForm from "@/pages/auth/Signup";
 import ForgotPassword from "@/pages/auth/ForgotPassword";
 import VerifyOtp from "@/pages/auth/VerifyOtp";
 import ResetPasswordForm from "@/pages/auth/ResetPasswordForm";
+import Profile from "../pages/auth/Profile";
 
 /* loaders */
 // import {
@@ -56,6 +58,13 @@ export const router = createBrowserRouter([
       { path: "/forgot-password", element: <ForgotPassword /> },
       { path: "/verify-otp", element: <VerifyOtp /> },
       { path: "/reset-password", element: <ResetPasswordForm /> },
+      { path: "/profile",
+        element:( 
+        <ProtectedRoute>
+            <Profile/>
+        </ProtectedRoute>
+        )
+      }
     ],
   },
 
