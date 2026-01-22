@@ -20,6 +20,26 @@ import type {
 
 import type { ApiResponse } from "@/types/api.types";
 
+export const getMe =
+  () => async (dispatch: AppDispatch) => {
+    dispatch(setLoading(true));
+
+    try {
+      const res = await apiConnector<ApiResponse<User>>(
+        "GET",
+        AUTH_ENDPOINTS.ME
+      );
+
+      if (!res.data.success || !res.data.data) {
+        throw new Error("Not authenticated");
+      }
+
+      dispatch(setUser(res.data.data));
+    } catch {
+      dispatch(logout());
+    }
+  };
+
 export const login =
   (data: LoginPayload, navigate: NavigateFunction) =>
   async (dispatch: AppDispatch) => {

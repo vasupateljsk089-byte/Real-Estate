@@ -5,14 +5,7 @@ export interface User {
     avatar: string | null;
     chatId: string[];
   }
-  
-export type StoredUser = Omit<User, "email">; 
-
-  export interface AuthState {
-    loading: boolean;
-    isAuthenticated: boolean;
-    user: User | null;
-  }
+   
   export interface LoginPayload {
     email: string;
     password: string;

@@ -56,7 +56,7 @@ const Navbar = () => {
         </nav>
 
         {/* RIGHT SIDE */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center justify-center gap-4">
 
           {/* 🔐 AUTH CONDITIONAL UI */}
           {!isAuthenticated ? (
@@ -65,7 +65,7 @@ const Navbar = () => {
               <NavLink
                 to="/login"
                 className="
-                  w-24 px-4 py-2 text-sm font-medium
+                  w-24 px-4 py-2 text-center text-sm font-medium
                   text-black border-2 border-gray-600
                   rounded-3xl transition
                 "
@@ -77,7 +77,7 @@ const Navbar = () => {
               <NavLink
                 to="/register"
                 className="
-                  w-24 px-4 py-2 text-sm font-medium
+                  w-24 px-4 py-2 text-sm text-center font-medium
                   text-black bg-[#C2A68C]
                   rounded-3xl transition
                 "
