@@ -6,10 +6,8 @@ import { USER_ENDPOINTS } from "@/api/endpoints";
 import { setLoading, setUser, type User } from "@/store/slices/auth.slice";
 import type { AppDispatch } from "@/store/index";
 import type { ApiResponse } from "@/types/api.types";
-/**
- * Update user profile
- * Uses multipart/form-data (FormData)
- */
+import { storage } from "@/utils/storage";
+
 export const updateUserProfile =
   (formData: FormData, navigate?: NavigateFunction) =>
   async (dispatch: AppDispatch) => {
@@ -24,12 +22,12 @@ export const updateUserProfile =
           "Content-Type": "multipart/form-data",
         }
       );
-
+      
+      console.log("Update Profile Response:", res);
       if (!res.data.success || !res.data.data) {
         throw new Error(res.data.message || "Invalid response");
       }
-
-      // ✅ SAFE: data is guaranteed now
+      storage.setUser(res.data.data);  
       dispatch(setUser(res.data.data));
 
       toast.success(res.data.message || "Profile updated successfully");

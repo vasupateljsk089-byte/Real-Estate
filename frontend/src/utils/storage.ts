@@ -1,17 +1,19 @@
-import type { StoredUser } from "@/store/slices/auth.slice";
+import type { User } from "@/store/slices/auth.slice";
+
+type storeUser = Omit<User, "id">;
 
 const USER_KEY = "auth_user";
 const OTP_TOKEN = "resetToken";
 
 export const storage = {
   
-  setUser(user: StoredUser) {
+  setUser(user: storeUser) {
     localStorage.setItem(USER_KEY, JSON.stringify(user));
   },
 
-  getUser(): StoredUser | null {
+  getUser(): storeUser | null {
     const data = localStorage.getItem(USER_KEY);
-    return data ? (JSON.parse(data) as StoredUser) : null;
+    return data ? (JSON.parse(data) as storeUser) : null;
   },
   
   clearUser() {

@@ -70,7 +70,7 @@ export const resetPasswordSchema = z
 
 
 export const profileSchema = z.object({
-  name: z
+  username: z
     .string()
     .min(2, "Name must be at least 2 characters")
     .optional()

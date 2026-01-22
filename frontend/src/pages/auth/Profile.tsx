@@ -1,43 +1,80 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Camera } from "lucide-react";
 
 import { profileSchema } from "@/validation/auth.validation";
 import type { ProfileForm } from "@/validation/auth.validation";
-import { useAppSelector, useAppDispatch } from "@/hooks/hooks";
+import type { storedUser } from "@/store/slices/auth.slice"; // adjust path if needed
+import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 import { updateUserProfile } from "@/services/user.service";
 import { Button } from "@/components/ui/Button";
+import { storage } from "@/utils/storage";
 
 const Profile = () => {
   const dispatch = useAppDispatch();
-  const { user, loading } = useAppSelector((state) => state.auth);
+  const { loading } = useAppSelector((state) => state.auth);
 
-  const [preview, setPreview] = useState<string | null>(
-    user?.avtar || null
-  );
+  /* 🔹 IMPORTANT: hydrate user from localStorage into React state */
+  const [user, setUser] = useState<storedUser | null>(null);
+
+  const [preview, setPreview] = useState<string | null>(null);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
+
+  /* 🔹 Load user ONCE on page refresh */
+  useEffect(() => {
+    const storedUser = storage.getUser();
+    setUser(storedUser);
+  }, []);
 
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors },
   } = useForm<ProfileForm>({
     resolver: zodResolver(profileSchema),
     mode: "onSubmit",
     defaultValues: {
-      name: user?.username || "",
-      email: user?.email || "",
-      phone: user?.phone || "",
-      city: user?.city || "",
-      gender: user?.gender || "",
+      username: "",
+      email: "",
+      phone: "",
+      city: "",
+      gender: "",
     },
   });
 
+  /* 🔹 Sync form + avatar when user is available */
+  useEffect(() => {
+    if (!user) return;
+
+    reset({
+      username: user.username ?? "",
+      email: user.email ?? "",
+      phone: user.phone ?? "",
+      city: user.city ?? "",
+      gender: user.gender ?? "",
+    });
+
+    setPreview(user.avtar ?? null);
+  }, [user, reset]);
+
+  /* 🔹 Avatar change */
+  const handleImageChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setAvatarFile(file);
+    setPreview(URL.createObjectURL(file));
+  };
+
+  /* 🔹 Submit */
   const onSubmit = (data: ProfileForm) => {
     const formData = new FormData();
 
-    if (data.name) formData.append("name", data.name);
+    if (data.username) formData.append("username", data.username);
     if (data.phone) formData.append("phone", data.phone);
     if (data.city) formData.append("city", data.city);
     if (data.gender) formData.append("gender", data.gender);
@@ -46,29 +83,30 @@ const Profile = () => {
     dispatch(updateUserProfile(formData));
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setAvatarFile(file);
-    setPreview(URL.createObjectURL(file));
-  };
+  /* 🔹 Loading state */
+  if (!user) {
+    return (
+      <div className="flex items-center justify-center h-[60vh] text-gray-500">
+        Loading profile…
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-10">
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8">
         {/* Header */}
-        <div className="mb-10">
+        <header className="mb-10">
           <h2 className="text-2xl font-semibold text-gray-900">
             Profile Settings
           </h2>
           <p className="text-sm text-gray-500 mt-1">
             Update your personal information
           </p>
-        </div>
+        </header>
 
         {/* Avatar */}
-        <div className="flex items-center gap-6 mb-10">
+        <section className="flex items-center gap-6 mb-10">
           <div className="relative">
             <img
               src={preview || "/avatar.png"}
@@ -85,38 +123,39 @@ const Profile = () => {
               />
             </label>
           </div>
+
           <div>
             <p className="text-sm font-medium text-gray-700">
               Profile photo
             </p>
-            <p className="text-xs text-gray-500 mt-1">
-              JPG, PNG up to 5MB
+            <p className="text-xs text-gray-500">
+              JPG or PNG • Max 5MB
             </p>
           </div>
-        </div>
+        </section>
 
         {/* Form */}
         <form
           onSubmit={handleSubmit(onSubmit)}
           className="space-y-6"
         >
-          {/* Full Name */}
+          {/* Name */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Full name
             </label>
             <input
-              {...register("name")}
-              className="w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              {...register("username")}
+              className="w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
             />
-            {errors.name && (
+            {errors.username && (
               <p className="text-xs text-red-600 mt-1">
-                {errors.name.message}
+                {errors.username.message}
               </p>
             )}
           </div>
 
-          {/* Email */}
+          {/* Email (readonly) */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Email address
@@ -138,7 +177,7 @@ const Profile = () => {
             </label>
             <input
               {...register("phone")}
-              className="w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
             />
             {errors.phone && (
               <p className="text-xs text-red-600 mt-1">
@@ -147,7 +186,7 @@ const Profile = () => {
             )}
           </div>
 
-          {/* City + Gender */}
+          {/* City & Gender */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -155,7 +194,7 @@ const Profile = () => {
               </label>
               <input
                 {...register("city")}
-                className="w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
               />
               {errors.city && (
                 <p className="text-xs text-red-600 mt-1">
@@ -170,7 +209,7 @@ const Profile = () => {
               </label>
               <select
                 {...register("gender")}
-                className="w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
               >
                 <option value="">Select</option>
                 <option value="male">Male</option>
@@ -185,7 +224,7 @@ const Profile = () => {
             </div>
           </div>
 
-          {/* Save Button */}
+          {/* Save */}
           <div className="pt-4">
             <Button type="submit" loading={loading}>
               Save Changes

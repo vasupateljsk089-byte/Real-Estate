@@ -182,6 +182,8 @@ export const login = async (
         id: true,
         email: true,
         username: true,
+        gender: true,
+        city: true,
         avtar: true,
         chatId: true,
         password: true, // ONLY because we need to compare

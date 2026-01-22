@@ -15,7 +15,7 @@ export interface User {
 }
  
 
-export type StoredUser = Omit<User, "email">; 
+export type storedUser = Omit<User, "id">; 
 
  export interface AuthState {
     authLoading: boolean;

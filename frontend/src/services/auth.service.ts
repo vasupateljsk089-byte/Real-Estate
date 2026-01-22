@@ -77,8 +77,8 @@ export const login =
       dispatch(setUser(res.data.data));
 
       // 2️ Save ONLY safe fields to localStorage
-      const { email, ...safeUser } = user;
-      storage.setUser(safeUser);
+      // const { email, ...safeUser } = user;
+      storage.setUser(user);
 
       toast.success(res.data.message || "Login successful 🎉");
       // showToast("success", res.data.message || "Login successful 🎉");

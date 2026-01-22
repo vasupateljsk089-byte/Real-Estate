@@ -211,12 +211,14 @@ export const updateProfile = async (
       city,
     };
 
+    console.log("Update Data before cleaning:", updateData);
     // 🖼 Avatar upload
     if (req.file) {
       const avatarUrl = await uploadToCloudinary(
         req.file.buffer,
-        "avatars"
+        "avtars"
       );
+      console.log("Uploaded Avatar URL:", avatarUrl);
       updateData.avatar = avatarUrl;
     }
 
@@ -227,7 +229,7 @@ export const updateProfile = async (
         id: true,
         username: true,
         email: true,
-        avatar: true,
+        avtar: true,
         phone: true,
         gender: true,
         city: true,

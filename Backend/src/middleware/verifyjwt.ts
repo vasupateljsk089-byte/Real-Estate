@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import prisma from "@lib/prisma";
 
-import { ApiResponse } from "@types";
+import { ApiResponse, TokenPayload } from "@types";
 import { MESSAGES } from "@constants/messages";
 
 export const authenticateUser = async (
@@ -10,8 +10,9 @@ export const authenticateUser = async (
   res: Response<ApiResponse>,
   next: NextFunction
 ): Promise<Response<ApiResponse> | void> => {
-  const token = req.cookies?.token;
-
+  const token = req.cookies?.accessToken;
+  console.log("Token in verifyjwt:", token);
+  
   if (!token) {
     return res.status(401).json({
       success: false,
@@ -21,21 +22,19 @@ export const authenticateUser = async (
   }
 
   try {
-    const jwtSecret = process.env.JWT_SECRET;
+    const jwtSecret = process.env.ACCESS_TOKEN_SECRET;
 
     if (!jwtSecret) {
       throw new Error("JWT secret not configured");
     }
 
-    const decoded = jwt.verify(token, jwtSecret) as JwtPayload & {
-      id: string;
-    };
-
+    const decoded = jwt.verify(token, jwtSecret) as TokenPayload;
+    console.log("Decoded Token:", decoded);  
     const user = await prisma.user.findUnique({
-      where: { id: decoded.id },
+      where: { id: decoded.userId },
       select: { id: true },
     });
-
+    console.log("Authenticated User:", user);
     if (!user) {
       return res.status(401).json({
         success: false,
@@ -46,7 +45,7 @@ export const authenticateUser = async (
 
     // attach to request (typed via declaration merging)
     req.userId = user.id;
-
+    console.log("Request UserID set to:", req.userId);
     next();
   } catch (error: any) {
 
