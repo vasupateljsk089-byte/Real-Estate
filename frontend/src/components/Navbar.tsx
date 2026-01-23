@@ -93,8 +93,8 @@ const Navbar = () => {
               <div className="relative group">
                 <img
                   src={
-                    user?.avtar ||
-                    "https://images.unsplash.com/photo-1723110994499-df46435aa4b3?q=80&w=1179&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+                    user?.profileImage ||
+                    "https://media2.dev.to/dynamic/image/width=320,height=320,fit=cover,gravity=auto,format=auto/https%3A%2F%2Fdev-to-uploads.s3.amazonaws.com%2Fuploads%2Fuser%2Fprofile_image%2F483102%2F6d940290-12d0-4c4a-8be9-1a9fc955d203.jpeg"
                   }
                   alt="profile"
                   className="w-10 h-10 rounded-full cursor-pointer"

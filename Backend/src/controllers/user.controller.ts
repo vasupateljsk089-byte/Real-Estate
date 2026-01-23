@@ -15,7 +15,7 @@ export const getUsers = async (
         id: true,
         username: true,
         email: true,
-        avtar: true,
+        profileImage: true,
         createdAt: true,
       },
     });
@@ -49,7 +49,7 @@ export const getUsers = async (
 //     });
 //   }
 
-//   const {avtar, ...inputs } = req.body;
+//   const {profileImage, ...inputs } = req.body;
 
 //   try {
 
@@ -57,7 +57,7 @@ export const getUsers = async (
 //       where: { id },
 //       data: {
 //         ...inputs,
-//         ...(avtar && { avtar }),
+//         ...(profileImage && { profileImage }),
 //       },
 //     });
 
@@ -212,14 +212,15 @@ export const updateProfile = async (
     };
 
     console.log("Update Data before cleaning:", updateData);
-    // 🖼 Avatar upload
+    //  Avatar upload
     if (req.file) {
+      console.log(req.file);
       const avatarUrl = await uploadToCloudinary(
         req.file.buffer,
-        "avtars"
+        "avtars" // folder name on cloudinary
       );
       console.log("Uploaded Avatar URL:", avatarUrl);
-      updateData.avatar = avatarUrl;
+      updateData.profileImage = avatarUrl;
     }
 
     const user = await prisma.user.update({
@@ -229,22 +230,26 @@ export const updateProfile = async (
         id: true,
         username: true,
         email: true,
-        avtar: true,
+        profileImage: true,
         phone: true,
         gender: true,
         city: true,
       },
     });
 
+  
     return res.status(200).json({
       success: true,
       message: "Profile updated successfully",
       data: user,
     });
   } catch (error) {
+    console.error("❌ Update Profile Error:", error);
+
     return res.status(500).json({
       success: false,
       message: "Failed to update profile",
+      error: error instanceof Error ? error.message : error,
     });
   }
 };

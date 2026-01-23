@@ -7,7 +7,7 @@ export interface User {
   id: string;
   email: string;
   username: string;
-  avtar: string | null;
+  profileImage: string | null;
   chatId: string[];
   gender? : Gender;
   phone?:string;

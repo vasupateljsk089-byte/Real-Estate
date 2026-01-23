@@ -60,7 +60,7 @@ export const getPost = async (
         user: {
           select: {
             username: true,
-            avtar: true,
+            profileImage: true,
           },
         },
       },

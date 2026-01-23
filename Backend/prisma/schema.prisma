@@ -18,7 +18,7 @@ model User {
   email     String   @unique                      // Unique constraint on the email field
   username  String                                
   password  String
-  avtar     String?                              // Optional field
+  profileImage     String?                              // Optional field
   phone      String?        // Optional
   gender     Gender?        // Optional
   city       String?        // Optional

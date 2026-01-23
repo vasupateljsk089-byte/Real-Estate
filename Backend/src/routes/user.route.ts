@@ -11,7 +11,7 @@ router.get('/',getUsers);
 router.delete('/:id',authenticateUser,deleteUser);
 router.post("/save", authenticateUser, savePost);
 router.get("/profilePosts", authenticateUser, profilePosts);
-router.patch("/profile",authenticateUser,upload.single("avatar"),updateProfile);
+router.patch("/profile",authenticateUser,upload.single("profileImage"),updateProfile); // here it must match with filed name on frontend
 
 
 export default router;

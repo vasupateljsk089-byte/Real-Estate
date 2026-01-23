@@ -89,11 +89,11 @@ export const getMe = async (
      * STEP 3: Fetch user
      */
     const user = await prisma.user.findUnique({
-      where: { id: payload.userId },
+      where: { id: payload.userId },  
       select: {
         id: true,
         username: true,
-        avtar: true,
+        profileImage: true,
         email: true,
         chatId: true,
       },
@@ -184,7 +184,8 @@ export const login = async (
         username: true,
         gender: true,
         city: true,
-        avtar: true,
+        phone:true,
+        profileImage: true,
         chatId: true,
         password: true, // ONLY because we need to compare
       },

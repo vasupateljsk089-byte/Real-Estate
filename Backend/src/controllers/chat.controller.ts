@@ -30,7 +30,7 @@ export const getChats = async (
               select: {
                 id: true,
                 username: true,
-                avtar: true,
+                profileImage: true,
               },
             })
           : null;

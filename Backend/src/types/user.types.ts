@@ -5,7 +5,7 @@ export interface UpdateProfilePayload {
   phone?: string;
   gender?: Gender;
   city?: string;
-  avatar?: string;
+  profileImage?: string;
 }
 
 export interface SavePostPayload {

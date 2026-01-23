@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Camera } from "lucide-react";
 
+import {useNavigate} from "react-router-dom";
 import { profileSchema } from "@/validation/auth.validation";
 import type { ProfileForm } from "@/validation/auth.validation";
 import type { storedUser } from "@/store/slices/auth.slice"; // adjust path if needed
@@ -10,9 +11,10 @@ import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 import { updateUserProfile } from "@/services/user.service";
 import { Button } from "@/components/ui/Button";
 import { storage } from "@/utils/storage";
-
+const PROFILE_IMAGE = "https://media2.dev.to/dynamic/image/width=320,height=320,fit=cover,gravity=auto,format=auto/https%3A%2F%2Fdev-to-uploads.s3.amazonaws.com%2Fuploads%2Fuser%2Fprofile_image%2F483102%2F6d940290-12d0-4c4a-8be9-1a9fc955d203.jpeg";
 const Profile = () => {
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
   const { loading } = useAppSelector((state) => state.auth);
 
   /* 🔹 IMPORTANT: hydrate user from localStorage into React state */
@@ -56,7 +58,7 @@ const Profile = () => {
       gender: user.gender ?? "",
     });
 
-    setPreview(user.avtar ?? null);
+    setPreview(user.profileImage ?? PROFILE_IMAGE);
   }, [user, reset]);
 
   /* 🔹 Avatar change */
@@ -78,7 +80,7 @@ const Profile = () => {
     if (data.phone) formData.append("phone", data.phone);
     if (data.city) formData.append("city", data.city);
     if (data.gender) formData.append("gender", data.gender);
-    if (avatarFile) formData.append("avatar", avatarFile);
+    if (avatarFile) formData.append("profileImage", avatarFile);
 
     dispatch(updateUserProfile(formData));
   };
@@ -231,6 +233,13 @@ const Profile = () => {
             </Button>
           </div>
         </form>
+
+        <div
+        onClick={() => navigate(-1)}
+        className="mt-8 text-center text-sm font-semibold text-gray-500 hover:text-gray-800 cursor-pointer transition"
+      >
+        ← Go back
+      </div>
       </div>
     </div>
   );
