@@ -85,6 +85,7 @@ export const profileSchema = z.object({
   phone: z
     .string()
     .min(10, "Phone number must be at least 10 digits")
+    .max(10,"Phone number must be at least 10 digits")
     .optional()
     .or(z.literal("")),
 

@@ -1,7 +1,10 @@
+type PostType = 'rent' | 'buy';
+type PropertyType = "apartment" | "house" | "condo" | "land";
+
 export interface PostQueryParams {
   city?: string;
-  type?: string;
-  property?: string;
+  type?: PostType;
+  property?: PropertyType;
   bedroom?: string;
   minPrice?: string;
   maxPrice?: string;
@@ -18,8 +21,8 @@ export interface CreatePostPayload {
     bathroom: number;
     latitude: string;
     longitude: string;
-    type: "buy" | "rent";
-    property: "apartment" | "house" | "condo" | "land";
+    type: PostType;
+    property: PropertyType;
   };
   postDetails: {
     desc: string;
@@ -32,4 +35,5 @@ export interface CreatePostPayload {
     restaurant: number;
   };
 }
+
 

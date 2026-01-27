@@ -12,6 +12,7 @@ import { updateUserProfile } from "@/services/user.service";
 import { Button } from "@/components/ui/Button";
 import { storage } from "@/utils/storage";
 const PROFILE_IMAGE = "https://media2.dev.to/dynamic/image/width=320,height=320,fit=cover,gravity=auto,format=auto/https%3A%2F%2Fdev-to-uploads.s3.amazonaws.com%2Fuploads%2Fuser%2Fprofile_image%2F483102%2F6d940290-12d0-4c4a-8be9-1a9fc955d203.jpeg";
+
 const Profile = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
@@ -95,20 +96,17 @@ const Profile = () => {
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-10">
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8">
+    <div className="mb-2 shadow-emerald-50">
         {/* Header */}
-        <header className="mb-10">
-          <h2 className="text-2xl font-semibold text-gray-900">
+          <h2 className="text-2xl text-center font-semibold text-gray-900">
             Profile Settings
           </h2>
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-sm text-center text-gray-500 mt-1">
             Update your personal information
           </p>
-        </header>
 
         {/* Avatar */}
-        <section className="flex items-center gap-6 mb-10">
+        <section className="flex flex-col items-center justify-center mt-5 gap-4 mb-10">
           <div className="relative">
             <img
               src={preview || "/avatar.png"}
@@ -126,7 +124,7 @@ const Profile = () => {
             </label>
           </div>
 
-          <div>
+          <div className="text-center">
             <p className="text-sm font-medium text-gray-700">
               Profile photo
             </p>
@@ -135,6 +133,7 @@ const Profile = () => {
             </p>
           </div>
         </section>
+
 
         {/* Form */}
         <form
@@ -179,6 +178,7 @@ const Profile = () => {
             </label>
             <input
               {...register("phone")}
+              maxLength={10}
               className="w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
             />
             {errors.phone && (
@@ -241,7 +241,6 @@ const Profile = () => {
         ← Go back
       </div>
       </div>
-    </div>
   );
 };
 

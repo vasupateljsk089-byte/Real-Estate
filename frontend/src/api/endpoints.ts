@@ -1,4 +1,4 @@
-const BASE_URL = "/api";
+export const BASE_URL = "/api";
 
 export const AUTH_ENDPOINTS = {
   LOGIN: `${BASE_URL}/auth/login`,
@@ -24,9 +24,9 @@ export const USER_ENDPOINTS = {
 export const POST_ENDPOINTS = {
   CREATE_POST: `${BASE_URL}/post/`,
   GET_ALL_POSTS: `${BASE_URL}/post/`,
-    GET_POST_BY_ID: (id:string) => `${BASE_URL}/post/${id}`,
-    UPDATE_POST: (id:string) => `${BASE_URL}/post/${id}`,
-    DELETE_POST: (id:string) => `${BASE_URL}/post/${id}`,
+  GET_POST_BY_ID: (id:string) => `${BASE_URL}/post/${id}`,
+  UPDATE_POST: (id:string) => `${BASE_URL}/post/${id}`,
+  DELETE_POST: (id:string) => `${BASE_URL}/post/${id}`,
 };
 
 export const CHAT_ENDPOINTS = {

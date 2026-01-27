@@ -20,24 +20,6 @@ import type {
 
 import type { ApiResponse } from "@/types/api.types";
 
-// export const loadUser = () => async (dispatch: AppDispatch) => {
-//   try {
-
-//     const res = await apiConnector<ApiResponse<User>>(
-//       "GET",
-//       AUTH_ENDPOINTS.ME
-//     );
-
-//     if (res.data.success && res.data.data) {
-//       dispatch(setUser(res.data.data));
-//     } else {
-//       dispatch(setAuthLoading(false));
-//     }
-//   } catch {
-//     dispatch(setAuthLoading(false));
-//   }
-// };
-
 export const loadUser = () => async (dispatch: AppDispatch) => {
   try {
     dispatch(setAuthLoading(true));
