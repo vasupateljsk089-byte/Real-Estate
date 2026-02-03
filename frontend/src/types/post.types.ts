@@ -1,23 +1,15 @@
-export type PostType = "buy" | "rent" | "all";
-
-export type PropertyType =
-  | "apartment"
-  | "house"
-  | "villa"
-  | "plot";
+export type PostType = "buy" | "rent";
+export type PropertyType = "apartment" | "house" | "villa" | "plot";
 
 export interface Filters {
-  city?: string;
+  city?: string;           // home page only
+  search?: string;         // list page OR-search
   type?: PostType;
   property?: PropertyType;
   bedroom?: number;
   minPrice?: number;
   maxPrice?: number;
 }
-
-export type Search = Omit<Filters, "city"> & {
-  search?: string;
-};
 
 export interface Post {
   id: string;

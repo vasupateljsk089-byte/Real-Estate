@@ -36,9 +36,8 @@ export default function SearchBar() {
     const params = new URLSearchParams();
 
     Object.entries(data).forEach(([key, value]) => {
-      if (value !== undefined && value !== "") {
-        params.append(key, String(value));
-      }
+      if (typeof value === "string" && value.trim() === "") return;
+        params.append(key, String(value).trim());
     });
     
     console.log("params",params.toString())
