@@ -9,14 +9,15 @@
     "outDir": "./dist",
     "paths": {
       "@constants/*": ["constants/*"],
-      "@types": ["types/index.ts"],
       "@types/*": ["types/*"],
+      "@types": ["types/index.ts"],
       "@controllers/*": ["controllers/*"],
       "@routes/*": ["routes/*"],
       "@utils/*": ["utils/*"],
       "@middleware/*": ["middleware/*"],
       "@config/*": ["config/*"],
       "@lib/*": ["lib/*"],
+      "@prisma": ["../generated/prisma/index"]
     }
   },
   "include": ["src"]

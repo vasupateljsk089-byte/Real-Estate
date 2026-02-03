@@ -41,8 +41,9 @@ export default function SearchBar() {
       }
     });
     
+    console.log("params",params.toString())
 
-    navigate(`/`);
+    navigate(`/list?${params.toString()}`);
   };
 
   const inputClass = `

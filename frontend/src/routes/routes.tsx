@@ -1,10 +1,11 @@
 import { createBrowserRouter } from "react-router-dom";
 
 /* layouts */
-import Layout from "@/layout/Layout";
+import MainLayout from "@/layout/MainLayout";
+import MapLayout from "@/layout/MapLayout";
 import AuthLayout from "@/layout/AuthLayout";
 
-import ProtectedRoute from '@/routes/ProtectedRoute';
+import ProtectedRoute from "@/routes/ProtectedRoute";
 
 /* pages */
 import Home from "../pages/home/Home";
@@ -19,7 +20,8 @@ import SignupForm from "@/pages/auth/Signup";
 import ForgotPassword from "@/pages/auth/ForgotPassword";
 import VerifyOtp from "@/pages/auth/VerifyOtp";
 import ResetPasswordForm from "@/pages/auth/ResetPasswordForm";
-import Profile from "../pages/auth/Profile";
+import Profile from "@/pages/auth/Profile";
+import Listpage from "@/pages/listPage/Listpage";
 
 /* loaders */
 // import {
@@ -30,17 +32,12 @@ import Profile from "../pages/auth/Profile";
 
 export const router = createBrowserRouter([
   {
-    element: <Layout />,
+    element: <MainLayout />,
     children: [
       {
         path: "/",
         element: <Home />,
       },
-      // {
-      //   path: "/list",
-      //   element: <Listpage />,
-      //   loader: listPageLoader,
-      // },
       // {
       //   path: "/:id",
       //   element: <Singlepage />,
@@ -49,7 +46,18 @@ export const router = createBrowserRouter([
     ],
   },
 
-//   /* 🔐 Auth pages */
+  {
+    element: <MapLayout />,
+    children: [
+      {
+        path: "/list",
+        element: <Listpage />,
+        // loader: listPageLoader,
+      },
+    ],
+  },
+
+  //   /* 🔐 Auth pages */
   {
     element: <AuthLayout />,
     children: [
@@ -58,14 +66,14 @@ export const router = createBrowserRouter([
       { path: "/forgot-password", element: <ForgotPassword /> },
       { path: "/verify-otp", element: <VerifyOtp /> },
       { path: "/reset-password", element: <ResetPasswordForm /> },
-      { path: "/profile",
-        element:( 
-        <ProtectedRoute>
-            <Profile/>
-        </ProtectedRoute>
-        )
-      }
+      {
+        path: "/profile",
+        element: (
+          <ProtectedRoute>
+            <Profile />
+          </ProtectedRoute>
+        ),
+      },
     ],
   },
-
 ]);

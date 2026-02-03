@@ -10,7 +10,10 @@ export const addMessage = async (
 ): Promise<Response<ApiResponse>> => {
   const userId = req.userId!;
   const chatId = req.params.chatId;
+  
   const { text } = req.body;
+
+  
 
   if (!text) {
     return res.status(400).json({

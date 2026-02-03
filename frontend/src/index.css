@@ -2,6 +2,21 @@
 @tailwind components;
 @tailwind utilities;
 
+
+/* Remove space between leaflet popup and card */
+.leaflet-popup-content {
+  margin: 0 !important;
+}
+
+.leaflet-popup-content-wrapper {
+  padding: 0 !important;
+  border-radius: 0.75rem; /* match your card */
+}
+
+.leaflet-popup-tip {
+  margin-top: -1px;
+}
+
 /* :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;

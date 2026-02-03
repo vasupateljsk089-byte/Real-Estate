@@ -1,10 +1,10 @@
 import { apiConnector } from "@/api/axios";
 import type { ApiResponse } from "@/types/api.types";
-import type { Post, PostQueryParams } from "@/types/post.types";
+import type { Post, Filters } from "@/types/post.types";
 import { POST_ENDPOINTS } from "@/api/endpoints";
 
 
-export const getAllPosts = async (params: PostQueryParams) => {
+export const getAllPosts = async (params: Filters) => {
   const query = new URLSearchParams();
 
   Object.entries(params).forEach(([key, value]) => {

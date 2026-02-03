@@ -24,7 +24,7 @@ const Home = () => {
 
   return (
     <>
-      {/* ================= HERO ================= */}
+
       <section className="relative min-h-[95vh]">
         {/* Background Image */}
         <div

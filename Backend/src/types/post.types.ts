@@ -3,6 +3,7 @@ type PropertyType = "apartment" | "house" | "condo" | "land";
 
 export interface PostQueryParams {
   city?: string;
+  title?: string,
   type?: PostType;
   property?: PropertyType;
   bedroom?: string;
@@ -19,8 +20,8 @@ export interface CreatePostPayload {
     city: string;
     bedroom: number;
     bathroom: number;
-    latitude: string;
-    longitude: string;
+    latitude: number;
+    longitude: number;
     type: PostType;
     property: PropertyType;
   };

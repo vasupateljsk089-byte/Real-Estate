@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import prisma from "@lib/prisma";
 import { ApiResponse, PostQueryParams, CreatePostPayload } from "@types";
 import { MESSAGES } from "@constants/messages";
-import { Type, Property } from "@prisma/client";
+import { Type, Property } from "../../generated/prisma/index.js";
 
 export const getPosts = async (
   req: Request<{}, {}, {}, PostQueryParams>,
@@ -11,6 +11,7 @@ export const getPosts = async (
   try {
     const {
       city,
+      title,
       type,
       property,
       bedroom,
@@ -21,6 +22,7 @@ export const getPosts = async (
     const posts = await prisma.post.findMany({
       where: {
         city: city || undefined,
+        title: title || undefined,
         type: type ? (type as Type) : undefined,
         property: property ? (property as Property) : undefined,
         bedroom: bedroom ? parseInt(bedroom) : undefined,

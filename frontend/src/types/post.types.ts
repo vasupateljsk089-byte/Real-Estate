@@ -1,4 +1,4 @@
-export type PostType = "buy" | "rent";
+export type PostType = "buy" | "rent" | "all";
 
 export type PropertyType =
   | "apartment"
@@ -6,7 +6,7 @@ export type PropertyType =
   | "villa"
   | "plot";
 
-export interface PostQueryParams {
+export interface Filters {
   city?: string;
   type?: PostType;
   property?: PropertyType;
@@ -14,6 +14,10 @@ export interface PostQueryParams {
   minPrice?: number;
   maxPrice?: number;
 }
+
+export type Search = Omit<Filters, "city"> & {
+  search?: string;
+};
 
 export interface Post {
   id: string;
@@ -28,8 +32,8 @@ export interface Post {
   bedroom: number;
   bathroom: number;
 
-  latitude: string;   // backend sends string
-  longitude: string;  // backend sends string
+  latitude: number;   // backend sends string
+  longitude: number;  // backend sends string
 
   type: PostType;
   property: PropertyType;

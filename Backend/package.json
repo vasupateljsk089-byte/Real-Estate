@@ -2,6 +2,7 @@
   "name": "api",
   "version": "1.0.0",
   "main": "dist/app.js",
+  "type": "module",
   "scripts": {
     "dev": "tsx watch src/app.ts",
     "build": "tsc",
@@ -12,7 +13,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "@prisma/client": "^6.16.1",
+    "@prisma/client": "^6.19.0",
     "axios": "^1.7.5",
     "bcrypt": "^5.1.1",
     "cloudinary": "^2.9.0",
@@ -23,7 +24,7 @@
     "jsonwebtoken": "^9.0.2",
     "multer": "^2.0.2",
     "nodemailer": "^7.0.12",
-    "prisma": "^6.16.1"
+    "prisma": "^6.19.0"
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",
